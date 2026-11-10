@@ -1,0 +1,16 @@
+{
+  "name": "GAM CLINIC — Склад",
+  "short_name": "Склад GAM",
+  "description": "Учёт расходных материалов клиники GAM CLINIC",
+  "lang": "ru",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f6f3",
+  "theme_color": "#3b66a6",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

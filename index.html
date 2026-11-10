@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GAM CLINIC — Склад</title>
+<meta name="description" content="Учёт расходных материалов клиники GAM CLINIC">
+<meta name="theme-color" content="#3b66a6">
+<meta name="color-scheme" content="light">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Склад GAM">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{
+  --bg:#f7f6f3;--card:#fff;--ink:#2a3038;--mut:#68717a;--slate:#616a73;--blue:#88ace0;--deep:#3b66a6;
+  --tint:#eaf1fa;--line:#e4e1da;--warn:#a85a08;--warnbg:#fdf0dc;--bad:#b42318;--badbg:#fde8e6;
+  --ok:#2b7554;--okbg:#e3f2ea;--r:14px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  padding-bottom:calc(140px + env(safe-area-inset-bottom))}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.hide{display:none!important}
+
+.top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
+  padding:calc(10px + env(safe-area-inset-top)) 16px 10px}
+.top-in{max-width:980px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.brand{display:flex;flex-direction:column;line-height:1.1;margin-right:auto}
+.brand b{font-size:19px;font-weight:700;letter-spacing:.16em;color:var(--slate)}
+.brand small{font-size:12.5px;color:var(--deep);letter-spacing:.06em;margin-top:3px;font-weight:600}
+.brand img{height:34px;width:auto;display:block}
+.chip-user{border:1px solid #cddcf0;background:var(--tint);border-radius:999px;padding:8px 14px;font-weight:600;color:var(--deep);min-height:42px}
+.btn-login{background:var(--deep);color:#fff;border:0;border-radius:999px;padding:10px 18px;font-weight:600;min-height:42px}
+
+main{max-width:980px;margin:0 auto;padding:14px 16px 0}
+.banner{border-radius:12px;padding:11px 14px;margin:0 0 12px;font-size:15px;display:flex;gap:10px;align-items:center;justify-content:space-between}
+.banner.info{background:var(--tint);color:#27497a}
+.banner.warn{background:var(--warnbg);color:var(--warn)}
+.banner.bad{background:var(--badbg);color:var(--bad)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:0 0 12px}
+.card h3{margin:0 0 8px;font-size:16px}
+.mut{color:var(--mut)}
+.small{font-size:13.5px}
+h2{font-size:20px;margin:6px 0 10px}
+
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;border:1px solid var(--line);background:#fff;color:var(--slate);border-radius:999px;padding:9px 15px;font-weight:600;min-height:42px;white-space:nowrap}
+.tab small{font-weight:500;color:var(--mut);margin-left:5px}
+.tab[aria-selected=true]{background:var(--deep);border-color:var(--deep);color:#fff}
+.tab[aria-selected=true] small{color:#d6e3f6}
+.tab.alert{color:var(--bad);border-color:#f1c3be}
+.tab.alert[aria-selected=true]{background:var(--bad);border-color:var(--bad);color:#fff}
+.search{width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px 14px;margin:0 0 10px}
+
+.list{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.gh{padding:9px 14px;background:#f1efea;color:var(--slate);font-weight:700;font-size:14px}
+.row{display:flex;align-items:center;gap:10px;padding:11px 14px;border-top:1px solid var(--line)}
+.row:first-child,.gh+.row{border-top:0}
+.row.is-in{background:#f4f8fd}
+.row.dim{opacity:.55}
+.rn{flex:1;min-width:0}
+.nm{font-weight:600;overflow-wrap:anywhere}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:3px;align-items:center}
+.tag{font-size:12.5px;border-radius:999px;padding:2px 9px;background:#eee;color:var(--slate);font-weight:600}
+.tag.bad{background:var(--badbg);color:var(--bad)}
+.tag.warn{background:var(--warnbg);color:var(--warn)}
+.tag.ok{background:var(--okbg);color:var(--ok)}
+.tag.blue{background:var(--tint);color:var(--deep)}
+.linkbtn{border:0;background:none;color:var(--deep);padding:2px 0;font-size:13.5px;text-decoration:underline;text-underline-offset:3px;min-height:28px}
+.st{text-align:right;min-width:58px;line-height:1.1}
+.st b{font-size:22px;font-variant-numeric:tabular-nums}
+.st b.low{color:var(--bad)}
+.st small{display:block;color:var(--mut);font-size:12.5px;margin-top:2px}
+.plus{width:46px;height:46px;border-radius:50%;border:1.5px solid var(--deep);background:#fff;color:var(--deep);font-size:26px;line-height:1;font-weight:500;flex:none}
+.step{display:flex;align-items:center;gap:2px;background:var(--deep);border-radius:999px;color:#fff;flex:none}
+.step button{width:42px;height:46px;border:0;background:none;color:#fff;font-size:24px;line-height:1}
+.step span{min-width:26px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.empty{padding:28px 16px;text-align:center;color:var(--mut)}
+
+.basket{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));z-index:25;padding:0 16px}
+.basket-in{max-width:980px;margin:0 auto;background:var(--deep);color:#fff;border-radius:16px;padding:10px 10px 10px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(30,60,110,.28)}
+.basket-in b{flex:1;white-space:nowrap}
+.basket-in button{border:0;border-radius:12px;padding:11px 16px;font-weight:700;min-height:44px}
+.basket-in .go{background:#fff;color:var(--deep)}
+.basket-in .clr{background:rgba(255,255,255,.16);color:#fff}
+nav.bar{position:fixed;left:0;right:0;bottom:0;z-index:24;background:#fff;border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+nav.bar div{max-width:980px;margin:0 auto;display:flex;gap:6px}
+nav.bar button{flex:1;border:0;background:none;border-radius:12px;padding:8px 4px;color:var(--mut);font-weight:600;font-size:14px;min-height:52px;position:relative}
+nav.bar button[aria-current=page]{background:var(--tint);color:var(--deep)}
+nav.bar .dot{position:absolute;top:2px;left:calc(50% + 24px);background:var(--bad);color:#fff;border-radius:999px;font-size:11.5px;min-width:19px;height:19px;line-height:19px;padding:0 5px;font-weight:700}
+
+.btn{border:0;background:var(--deep);color:#fff;border-radius:12px;padding:12px 18px;font-weight:700;min-height:46px}
+.btn.alt{background:#fff;color:var(--deep);border:1.5px solid var(--deep)}
+.btn.ghost{background:#eef1f5;color:var(--slate)}
+.btn.bad{background:var(--bad)}
+.btn.sm{padding:8px 12px;min-height:38px;font-size:14.5px;border-radius:10px}
+.btn[disabled]{opacity:.5}
+.field{display:block;margin:0 0 12px}
+.field>span{display:block;font-weight:600;font-size:14px;color:var(--slate);margin-bottom:5px}
+.inp{width:100%;border:1px solid #cfccc4;background:#fff;border-radius:11px;padding:11px 12px;min-height:46px}
+textarea.inp{min-height:130px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px}
+.rowx{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.grow{flex:1;min-width:0}
+
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:var(--r);background:#fff;margin-bottom:12px}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{padding:9px 11px;text-align:right;white-space:nowrap;border-top:1px solid var(--line)}
+th{background:#f1efea;color:var(--slate);font-size:13px;border-top:0}
+th:first-child,td:first-child{text-align:left;white-space:normal;min-width:150px}
+tr.click{cursor:pointer}
+tr.click:hover td{background:#f4f8fd}
+td.neg{color:var(--bad);font-weight:700}
+
+.ov{position:fixed;inset:0;background:rgba(30,38,50,.5);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:#fff;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:20px 18px calc(22px + env(safe-area-inset-bottom));position:relative}
+@media(min-width:700px){.ov{align-items:center}.sheet{border-radius:20px}}
+.sheet h3{margin:0 0 12px;font-size:19px;padding-right:36px}
+.sheet .x{position:absolute;top:10px;right:10px;width:40px;height:40px;border:0;border-radius:50%;background:#eef1f5;font-size:24px;line-height:1;color:var(--slate)}
+.acts{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.acts .btn{flex:1}
+.pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:6px 0 12px}
+.pick button{border:1px solid var(--line);background:#fff;border-radius:12px;padding:14px 10px;font-weight:600;min-height:52px;overflow-wrap:anywhere}
+.pick button:active{background:var(--tint)}
+.dots{display:flex;gap:14px;justify-content:center;margin:10px 0 16px}
+.dots i{width:16px;height:16px;border-radius:50%;border:2px solid var(--deep);display:block}
+.dots i.on{background:var(--deep)}
+.dots.err i{border-color:var(--bad);background:var(--badbg)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:300px;margin:0 auto}
+.pad button{border:1px solid var(--line);background:#fff;border-radius:16px;height:62px;font-size:24px;font-weight:600}
+.pad button:active{background:var(--tint)}
+.pad .e{visibility:hidden}
+.shake{animation:shake .35s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.pin-show{font-size:44px;letter-spacing:.3em;text-align:center;font-weight:700;color:var(--deep);background:var(--tint);border-radius:14px;padding:12px 0 12px .3em;margin:8px 0}
+#toast{position:fixed;left:0;right:0;bottom:calc(138px + env(safe-area-inset-bottom));z-index:60;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 16px}
+.toast{pointer-events:auto;background:#2a3038;color:#fff;border-radius:12px;padding:11px 14px;display:flex;gap:14px;align-items:center;box-shadow:0 8px 22px rgba(0,0,0,.25);max-width:520px}
+.toast.bad{background:var(--bad)}
+.toast button{border:0;background:none;color:#9fc0f2;font-weight:700;padding:4px 2px}
+.sub{display:flex;gap:6px;overflow-x:auto;margin:0 0 12px;padding-bottom:2px;scrollbar-width:none}
+.sub::-webkit-scrollbar{display:none}
+.sub button{flex:none;border:0;background:#e9e7e1;color:var(--slate);border-radius:10px;padding:9px 13px;font-weight:600;min-height:40px}
+.sub button[aria-selected=true]{background:var(--slate);color:#fff}
+.loading{padding:30px;text-align:center;color:var(--mut)}
+.bars{display:flex;align-items:flex-end;gap:3px;height:150px;margin:10px 0 4px}
+.bars div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;min-width:4px;height:100%}
+.bars i{display:block;background:var(--blue)}
+.bars i.u{background:#e49a4a}
+.foot{max-width:980px;margin:26px auto 0;padding:14px 16px;text-align:center;color:var(--mut);font-size:13.5px;display:flex;gap:9px;align-items:center;justify-content:center}
+.foot svg{width:26px;height:26px}
+.foot b{color:var(--slate)}
+.chk{display:flex;gap:10px;align-items:center;min-height:40px}
+.chk input{width:22px;height:22px;accent-color:var(--deep)}
+.ordrow{display:flex;gap:10px;align-items:flex-start;padding:11px 14px;border-top:1px solid var(--line)}
+.ordrow:first-child{border-top:0}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <div class="brand" id="brand"></div>
+  <div id="who"></div>
+</div></header>
+<main id="main"><div class="loading">Загрузка…</div></main>
+<div id="basket" class="basket hide"></div>
+<nav class="bar" id="nav"><div></div></nav>
+<div id="toast" aria-live="polite"></div>
+<noscript><p style="padding:20px">Для работы склада нужен JavaScript.</p></noscript>
+
+<script>
+'use strict';
+/* ============================ настройки ============================ */
+const SB = 'https://wcnpreukerxvhzdoajfn.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjbnByZXVrZXJ4dmh6ZG9hamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQzMTA5OTgsImV4cCI6MjEwOTg4Njk5OH0.0A9392W0pPUl9MJzK4klUHDXfoh5xQIntwRcFq4ByWw';
+const LOGO_SRC = ''; // когда пришлёте логотип клиники — путь к файлу, например 'logo.png'
+const UNITS = ['шт', 'упаковка', 'пара', 'шприц', 'флакон', 'тюбик', 'рулон', 'коробка', 'набор', 'пачка'];
+
+/* ============================ утилиты ============================ */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const LS = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} },
+};
+const fmt = (n, d = 2) => (n == null ? '—' : Number(n).toLocaleString('ru-RU', { maximumFractionDigits: d }));
+const when = (iso) => new Date(iso).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+const dayStr = (d) => d.toISOString().slice(0, 10);
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const mskDay = () => +new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Moscow', day: 'numeric' }).format(new Date());
+const mskDate = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Moscow' }).format(new Date());
+
+const MARK = (s = 28) => `<svg viewBox="0 0 64 64" width="${s}" height="${s}" aria-hidden="true"><ellipse cx="22" cy="21" rx="4.4" ry="6.4" fill="#616a73"/><ellipse cx="42" cy="21" rx="4.4" ry="6.4" fill="#616a73"/><path d="M13 37Q32 58 51 37" fill="none" stroke="#88ace0" stroke-width="6.5" stroke-linecap="round"/></svg>`;
+
+/* ============================ состояние ============================ */
+const S = {
+  cats: [], items: [], ov: null, recents: [],
+  staff: LS.get('gam_staff'), adminOn: false,
+  basket: {}, cat: null, q: '', view: 'stock', atab: 'analytics', range: 30,
+  online: true, loaded: false, staffList: [], recvList: [], logList: [],
+};
+let admin = LS.get('gam_admin');
+const role = () => (S.adminOn ? 'admin' : S.staff ? 'staff' : null);
+const tok = () => (S.adminOn ? null : S.staff ? S.staff.token : null);
+
+/* ============================ сеть ============================ */
+async function refreshAdmin() {
+  try {
+    const r = await fetch(SB + '/auth/v1/token?grant_type=refresh_token', {
+      method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ refresh_token: admin.refresh }),
+    });
+    if (!r.ok) throw new Error('refresh');
+    const j = await r.json();
+    admin = { access: j.access_token, refresh: j.refresh_token, exp: j.expires_at || Math.floor(Date.now() / 1000 + j.expires_in), email: admin.email };
+    LS.set('gam_admin', admin);
+  } catch (e) { admin = null; S.adminOn = false; LS.del('gam_admin'); }
+}
+async function api(path, opt = {}) {
+  if (admin && admin.exp - Date.now() / 1000 < 90) await refreshAdmin();
+  const headers = { apikey: KEY, Authorization: 'Bearer ' + (admin ? admin.access : KEY), 'Content-Type': 'application/json' };
+  const r = await fetch(SB + path, { ...opt, headers: { ...headers, ...(opt.headers || {}) } });
+  if (!r.ok) {
+    let j = null; try { j = await r.json(); } catch (e) {}
+    const err = new Error((j && (j.message || j.msg || j.error_description)) || r.statusText);
+    err.status = r.status; err.code = j && j.code; throw err;
+  }
+  return r.status === 204 ? null : r.json();
+}
+const rpc = (fn, args) => api('/rest/v1/rpc/' + fn, { method: 'POST', body: JSON.stringify(args || {}) });
+const get = (p) => api('/rest/v1/' + p);
+
+function errText(e) {
+  const m = String(e && e.message || e);
+  if (m === 'AUTH') return 'Нужно войти заново';
+  if (e instanceof TypeError || /fetch|network/i.test(m)) return 'Нет связи с сервером. Проверьте интернет';
+  if (m === 'BADQTY') return 'Неверное количество';
+  if (m === 'NOITEM') return 'Позиция не найдена';
+  if (m === 'EMPTY') return 'Заполните обязательные поля';
+  return m;
+}
+async function guard(fn) {
+  try { return await fn(); } catch (e) {
+    if (String(e.message) === 'AUTH') { await doLogout(true); }
+    toast(errText(e), { bad: true, ms: 5000 });
+    return undefined;
+  }
+}
+
+/* ============================ окна и уведомления ============================ */
+function sheet(html) {
+  closeSheet();
+  const d = document.createElement('div');
+  d.className = 'ov';
+  d.innerHTML = `<div class="sheet" role="dialog" aria-modal="true"><button class="x" data-act="close" aria-label="Закрыть">×</button>${html}</div>`;
+  d.addEventListener('click', (e) => { if (e.target === d) closeSheet(); });
+  document.body.appendChild(d);
+  document.body.style.overflow = 'hidden';
+  return d.querySelector('.sheet');
+}
+function closeSheet() { document.querySelectorAll('.ov').forEach((x) => x.remove()); document.body.style.overflow = ''; }
+function toast(msg, o = {}) {
+  const t = document.createElement('div');
+  t.className = 'toast' + (o.bad ? ' bad' : '');
+  t.innerHTML = `<span>${esc(msg)}</span>${o.label ? `<button>${esc(o.label)}</button>` : ''}`;
+  if (o.label) t.querySelector('button').onclick = () => { t.remove(); o.action && o.action(); };
+  $('#toast').appendChild(t);
+  setTimeout(() => t.remove(), o.ms || 4500);
+}
+function csvDownload(name, rows) {
+  const line = (r) => r.map((c) => { const s = String(c ?? ''); return /[";\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(';');
+  const blob = new Blob(['﻿' + rows.map(line).join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+
+/* ============================ данные ============================ */
+const itemById = (id) => S.items.find((i) => i.id === id);
+const catById = (id) => S.cats.find((c) => c.id === id);
+const isLow = (i) => i.min_qty != null && i.stock <= i.min_qty;
+const orderState = () => {
+  const m = {};
+  if (S.ov) (S.ov.entries || []).forEach((e) => { if (e.item_id && (e.status === 'open' || e.status === 'ordered')) m[e.item_id] = e.status; });
+  return m;
+};
+const orderBadge = () => {
+  if (!S.ov) return 0;
+  const auto = (S.ov.auto || []).filter((a) => !a.in_manual).length;
+  return auto + (S.ov.entries || []).filter((e) => e.status === 'open').length;
+};
+
+async function loadData(silent) {
+  try {
+    const [cats, items] = await Promise.all([
+      get('categories?select=id,name,sort&order=sort,name'),
+      get('items?select=id,category_id,name,unit,stock,min_qty,active&order=name'),
+    ]);
+    S.cats = cats; S.items = items; S.online = true; S.loaded = true;
+    if (role()) {
+      try { S.ov = await rpc('order_overview', { p_token: tok() }); } catch (e) { if (String(e.message) === 'AUTH') await doLogout(true); }
+      try { S.recents = role() === 'staff' ? await rpc('my_recent', { p_token: tok() }) : []; } catch (e) { S.recents = []; }
+    } else { S.ov = null; S.recents = []; }
+    if (!S.cat || (S.cat !== '__all' && S.cat !== '__low' && !catById(+S.cat))) S.cat = S.cats[0] ? S.cats[0].id : '__all';
+  } catch (e) {
+    S.online = false;
+    if (!silent) toast(errText(e), { bad: true });
+  }
+  if (!document.querySelector('.ov')) render();
+}
+
+/* ============================ отрисовка ============================ */
+function renderBrand() {
+  $('#brand').innerHTML = (LOGO_SRC ? `<img src="${esc(LOGO_SRC)}" alt="GAM CLINIC">` : `<b>GAM CLINIC</b>`) + `<small>Склад · расходные материалы</small>`;
+}
+function renderWho() {
+  const r = role();
+  $('#who').innerHTML = r
+    ? `<button class="chip-user" data-act="account">${r === 'admin' ? 'Администратор' : esc(S.staff.name)}</button>`
+    : `<button class="btn-login" data-act="login">Войти</button>`;
+}
+function renderNav() {
+  const r = role(); const nav = $('#nav div');
+  if (!r) { $('#nav').classList.add('hide'); return; }
+  $('#nav').classList.remove('hide');
+  const b = orderBadge();
+  const btn = (v, label, extra = '') => `<button data-act="nav" data-v="${v}" ${S.view === v ? 'aria-current="page"' : ''}>${label}${extra}</button>`;
+  nav.innerHTML = btn('stock', 'Склад') + btn('orders', 'Заказ', b ? `<span class="dot">${b}</span>` : '') + (r === 'admin' ? btn('admin', 'Управление') : '');
+}
+function renderBasket() {
+  const el = $('#basket'); const n = Object.keys(S.basket).length;
+  if (!n || !role() || S.view !== 'stock') { el.classList.add('hide'); return; }
+  el.classList.remove('hide');
+  el.innerHTML = `<div class="basket-in"><b>Выбрано: ${n}</b><button class="clr" data-act="clear">Сбросить</button><button class="go" data-act="review">Записать</button></div>`;
+}
+function footHTML() {
+  return `<div class="foot">${MARK()}<span>Created by <b>Saywan</b> · SaySmile</span></div>`;
+}
+function render() {
+  renderBrand(); renderWho(); renderNav(); renderBasket();
+  const main = $('#main');
+  if (!S.loaded) { main.innerHTML = `<div class="loading">${S.online ? 'Загрузка…' : 'Нет связи с сервером. Потяните вниз, чтобы повторить, или проверьте интернет.'}</div>`; return; }
+  let html = '';
+  if (!S.online) html += `<div class="banner bad"><span>Нет связи — показаны последние загруженные данные.</span><button class="btn sm" data-act="reload">Повторить</button></div>`;
+  if (S.view === 'orders' && role()) html += ordersHTML();
+  else if (S.view === 'admin' && role() === 'admin') html += adminShell();
+  else html += stockHTML();
+  main.innerHTML = html + footHTML();
+  if (S.view === 'admin' && role() === 'admin') showAdmin();
+}
+
+/* ---------- склад ---------- */
+function stockHTML() {
+  const r = role(); let h = '';
+  if (!r) h += `<div class="banner info"><span>Остатки видны всем. Чтобы отметить расход, нажмите «Войти».</span></div>`;
+  if (r && [1, 15].includes(mskDay()) && LS.get('gam_rem') !== mskDate()) {
+    h += `<div class="banner warn"><span>Сегодня день заказа. Проверьте вкладку «Заказ».</span><button class="btn sm ghost" data-act="remdone">Скрыть</button></div>`;
+  }
+  if (S.recents.length) {
+    const groups = {}; S.recents.forEach((x) => { (groups[x.batch] = groups[x.batch] || []).push(x); });
+    h += `<div class="card"><h3>Ваши последние записи</h3><div class="small mut" style="margin-bottom:8px">Ошиблись? В течение 10 минут запись можно отменить.</div>` +
+      Object.values(groups).map((g) => `<div class="rowx" style="margin-bottom:6px"><div class="grow small">${g.map((x) => `${esc(x.item)} — ${x.qty} ${esc(x.unit)}`).join('<br>')}</div><button class="btn sm alt" data-act="undo" data-ids="${g.map((x) => x.id).join(',')}">Отменить</button></div>`).join('') + `</div>`;
+  }
+  const active = S.items.filter((i) => i.active);
+  const lowN = active.filter(isLow).length;
+  const cnt = (id) => active.filter((i) => i.category_id === id).length;
+  h += `<div class="tabs" role="tablist">` +
+    S.cats.map((c) => `<button class="tab" role="tab" data-act="cat" data-id="${c.id}" aria-selected="${String(S.cat) === String(c.id)}">${esc(c.name)}<small>${cnt(c.id)}</small></button>`).join('') +
+    `<button class="tab" role="tab" data-act="cat" data-id="__all" aria-selected="${S.cat === '__all'}">Все<small>${active.length}</small></button>` +
+    `<button class="tab alert" role="tab" data-act="cat" data-id="__low" aria-selected="${S.cat === '__low'}">Мало<small>${lowN}</small></button></div>`;
+  h += `<input class="search" id="q" type="search" placeholder="Поиск по названию" value="${esc(S.q)}" autocomplete="off">`;
+  h += `<div class="list" id="list">${listHTML()}</div>`;
+  return h;
+}
+function listHTML() {
+  const q = S.q.trim().toLowerCase(); const r = role(); const os = orderState();
+  let items = S.items.filter((i) => i.active);
+  if (S.cat === '__low') items = items.filter(isLow);
+  else if (S.cat !== '__all') items = items.filter((i) => String(i.category_id) === String(S.cat));
+  if (q) items = items.filter((i) => i.name.toLowerCase().includes(q));
+  if (!items.length) return `<div class="empty">${q ? 'Ничего не найдено' : S.cat === '__low' ? 'Всё в наличии — ничего не заканчивается' : 'В этой категории пока нет позиций'}</div>`;
+  const row = (i) => {
+    const inB = S.basket[i.id] || 0; const low = isLow(i); const st = os[i.id];
+    const tags = [];
+    if (low) tags.push(`<span class="tag bad">ниже минимума (${i.min_qty})</span>`);
+    if (st === 'ordered') tags.push(`<span class="tag blue">заказано</span>`);
+    else if (st === 'open') tags.push(`<span class="tag warn">в списке заказа</span>`);
+    const flag = r && i.min_qty == null && !st ? `<button class="linkbtn" data-act="flag" data-id="${i.id}">Заканчивается</button>` : '';
+    const ctl = r ? (inB
+      ? `<div class="step"><button data-act="dec" data-id="${i.id}" aria-label="Меньше">−</button><span>${inB}</span><button data-act="inc" data-id="${i.id}" aria-label="Больше">+</button></div>`
+      : `<button class="plus" data-act="inc" data-id="${i.id}" aria-label="Взять: ${esc(i.name)}">+</button>`) : '';
+    return `<div class="row ${inB ? 'is-in' : ''}"><div class="rn"><div class="nm">${esc(i.name)}</div><div class="meta">${tags.join('')}${flag}</div></div>` +
+      `<div class="st"><b class="${i.stock <= 0 || low ? 'low' : ''}">${i.stock}</b><small>${esc(i.unit)}</small></div>${ctl}</div>`;
+  };
+  if (S.cat === '__all' || S.cat === '__low') {
+    let out = ''; S.cats.forEach((c) => { const g = items.filter((i) => i.category_id === c.id); if (g.length) out += `<div class="gh">${esc(c.name)}</div>` + g.map(row).join(''); });
+    return out;
+  }
+  return items.map(row).join('');
+}
+
+/* ---------- заказ ---------- */
+function ordersHTML() {
+  const ov = S.ov || { auto: [], entries: [] }; const adm = role() === 'admin';
+  const auto = (ov.auto || []).filter((a) => !a.in_manual);
+  const open = ov.entries.filter((e) => e.status === 'open');
+  const ordered = ov.entries.filter((e) => e.status === 'ordered');
+  const recv = ov.entries.filter((e) => e.status === 'received');
+  const chk = (attr, id) => adm ? `<input type="checkbox" ${attr}="${id}" checked aria-label="Выбрать" style="width:22px;height:22px;accent-color:var(--deep);margin-top:2px">` : '';
+  let h = `<h2>Список заказа</h2>`;
+  if ([1, 15].includes(mskDay())) h += `<div class="banner warn"><span>Сегодня день заказа (1 и 15 числа).</span></div>`;
+  h += `<div class="rowx" style="margin-bottom:12px"><button class="btn" data-act="addorder">+ Добавить в заказ</button>${adm ? `<button class="btn alt" data-act="copyorder">Скопировать список</button>` : ''}</div>`;
+  h += `<div class="card" style="padding:0;overflow:hidden"><div class="gh">Автоматически — ниже минимума (${auto.length})</div>` +
+    (auto.length ? auto.map((a) => `<div class="ordrow">${chk('data-auto', a.item_id)}<div class="grow"><div class="nm">${esc(a.name)}</div><div class="small mut">${esc(a.category)} · остаток ${a.stock} ${esc(a.unit)} · минимум ${a.min}</div></div><span class="tag blue">автоматически</span></div>`).join('') : `<div class="empty">Всё выше минимума</div>`) + `</div>`;
+  h += `<div class="card" style="padding:0;overflow:hidden"><div class="gh">Добавлено вручную и по просьбе врачей (${open.length})</div>` +
+    (open.length ? open.map((e) => `<div class="ordrow">${chk('data-eid', e.id)}<div class="grow"><div class="nm">${esc(e.name)}${e.free ? ' <span class="tag warn">нет на складе</span>' : ''}</div>` +
+      `<div class="small mut">${e.doctor ? 'Врач: ' + esc(e.doctor) + ' · ' : ''}${e.note ? esc(e.note) + ' · ' : ''}${esc(e.by)} · ${when(e.created_at)}</div></div>` +
+      `<span class="tag ${e.by === 'автоматически' ? 'blue' : ''}">${e.by === 'автоматически' ? 'автоматически' : 'вручную'}</span>${adm ? `<button class="btn sm ghost" data-act="ocancel" data-id="${e.id}">×</button>` : ''}</div>`).join('') : `<div class="empty">Пока пусто</div>`) + `</div>`;
+  if (adm) h += `<div class="rowx" style="margin-bottom:14px"><button class="btn" data-act="markordered">Отметить выбранные как «Заказано»</button></div>`;
+  if (ordered.length) h += `<div class="card" style="padding:0;overflow:hidden"><div class="gh">Заказано, ждём поставку (${ordered.length})</div>` + ordered.map((e) =>
+    `<div class="ordrow"><div class="grow"><div class="nm">${esc(e.name)}</div><div class="small mut">заказано ${e.ordered_at ? when(e.ordered_at) : ''}${e.doctor ? ' · врач: ' + esc(e.doctor) : ''}</div></div>` +
+    (adm ? `<button class="btn sm" data-act="oreceive" data-id="${e.id}" data-item="${e.item_id || ''}">Получено</button><button class="btn sm ghost" data-act="oback" data-id="${e.id}">Назад</button>` : '') + `</div>`).join('') + `</div>`;
+  if (recv.length) h += `<div class="card" style="padding:0;overflow:hidden"><div class="gh">Получено за 14 дней</div>` + recv.map((e) => `<div class="ordrow"><div class="grow"><div class="nm">${esc(e.name)}</div><div class="small mut">${e.received_at ? when(e.received_at) : ''}</div></div><span class="tag ok">получено</span></div>`).join('') + `</div>`;
+  return h;
+}
+
+/* ---------- управление (админ) ---------- */
+const ATABS = [['analytics', 'Аналитика'], ['receive', 'Приход'], ['count', 'Инвентаризация'], ['items', 'Позиции'], ['staff', 'Сотрудники'], ['history', 'История'], ['data', 'Данные']];
+function adminShell() {
+  return `<div class="sub" role="tablist">${ATABS.map(([k, l]) => `<button role="tab" data-act="atab" data-k="${k}" aria-selected="${S.atab === k}">${l}</button>`).join('')}</div><div id="apane"><div class="loading">Загрузка…</div></div>`;
+}
+const pane = (h) => { const p = $('#apane'); if (p) p.innerHTML = h; };
+async function showAdmin() {
+  const k = S.atab;
+  try {
+    if (k === 'analytics') await paneAnalytics();
+    else if (k === 'receive') paneReceive();
+    else if (k === 'count') paneCount();
+    else if (k === 'items') paneItems();
+    else if (k === 'staff') await paneStaff();
+    else if (k === 'history') await paneHistory();
+    else if (k === 'data') paneData();
+  } catch (e) { pane(`<div class="banner bad">${esc(errText(e))}</div>`); if (String(e.message) === 'AUTH') doLogout(true); }
+}
+
+/* аналитика */
+let ANA = [];
+async function paneAnalytics() {
+  const to = new Date(); const from = addDays(to, -(S.range - 1));
+  const [rows, usage] = await Promise.all([rpc('admin_analytics', { p_from: dayStr(from), p_to: dayStr(to) }), rpc('admin_staff_usage', { p_from: dayStr(from), p_to: dayStr(to) })]);
+  ANA = rows;
+  const rng = [[7, '7 дн.'], [30, '30 дн.'], [90, '90 дн.'], [365, 'Год']];
+  const used = rows.filter((r) => r.total > 0);
+  let h = `<div class="rowx" style="margin-bottom:12px">${rng.map(([d, l]) => `<button class="btn sm ${S.range === d ? '' : 'ghost'}" data-act="range" data-d="${d}">${l}</button>`).join('')}<span class="grow"></span><button class="btn sm alt" data-act="csv-ana">Скачать Excel (CSV)</button></div>`;
+  h += `<p class="small mut" style="margin-top:0">Расход = списания ассистентов + неучтённое (разница, найденная при инвентаризации). Среднее считается с первого движения по позиции. Нажмите на строку — график.</p>`;
+  h += used.length ? `<div class="tw"><table><thead><tr><th>Позиция</th><th>Расход</th><th>из них неучт.</th><th>в день</th><th>в неделю</th><th>в месяц</th><th>остаток</th><th>хватит на, дн.</th></tr></thead><tbody>` +
+    used.map((r) => `<tr class="click" data-act="series" data-id="${r.item_id}"><td>${esc(r.name)}<div class="small mut">${esc(r.category)} · ${esc(r.unit)}</div></td><td>${r.total}</td><td class="${r.unrec ? 'neg' : ''}">${r.unrec || '—'}</td><td>${fmt(r.per_day)}</td><td>${fmt(r.per_week, 1)}</td><td>${fmt(r.per_month, 0)}</td><td>${r.stock}</td><td class="${r.days_left != null && r.days_left <= 14 ? 'neg' : ''}">${r.days_left ?? '—'}</td></tr>`).join('') + `</tbody></table></div>`
+    : `<div class="card empty">За выбранный период расхода пока нет. Данные появятся, когда ассистенты начнут отмечать материалы.</div>`;
+  h += `<h2>Кто сколько отмечал</h2><div class="tw"><table><thead><tr><th>Сотрудник</th><th>записей</th><th>единиц</th><th>последняя</th></tr></thead><tbody>` +
+    usage.map((u) => `<tr><td>${esc(u.name)}${u.active ? '' : ' <span class="tag">отключён</span>'}</td><td>${u.sessions}</td><td>${u.qty}</td><td>${u.last_at ? when(u.last_at) : '—'}</td></tr>`).join('') + `</tbody></table></div>`;
+  pane(h);
+}
+async function openSeries(id, bucket = 'day') {
+  const it = itemById(+id); const to = new Date(); const from = addDays(to, -(S.range - 1));
+  const ser = await rpc('admin_series', { p_item_id: +id, p_from: dayStr(from), p_to: dayStr(to), p_bucket: bucket });
+  const mx = Math.max(1, ...ser.map((s) => s.taken + s.unrec));
+  const bars = ser.length ? ser.map((s) => `<div title="${s.b}: ${s.taken} + ${s.unrec} неучт."><i class="u" style="height:${(s.unrec / mx) * 100}%"></i><i style="height:${(s.taken / mx) * 100}%"></i></div>`).join('') : '';
+  sheet(`<h3>${esc(it ? it.name : '')}</h3><div class="rowx">${[['day', 'По дням'], ['week', 'По неделям'], ['month', 'По месяцам']].map(([b, l]) => `<button class="btn sm ${b === bucket ? '' : 'ghost'}" data-act="seriesb" data-id="${id}" data-b="${b}">${l}</button>`).join('')}</div>` +
+    (ser.length ? `<div class="bars">${bars}</div><div class="small mut">Синий — отмечено ассистентами, оранжевый — неучтённое. Максимум столбца: ${mx} ${esc(it ? it.unit : '')}.</div>
+    <div class="tw" style="margin-top:12px"><table><thead><tr><th>Период</th><th>отмечено</th><th>неучт.</th></tr></thead><tbody>${ser.slice().reverse().map((s) => `<tr><td>${s.b}</td><td>${s.taken}</td><td>${s.unrec}</td></tr>`).join('')}</tbody></table></div>` : `<div class="empty">Нет расхода за период</div>`));
+}
+
+/* приход */
+function itemSelect(id = 'sel', withEmpty = true) {
+  return `<select class="inp" id="${id}">${withEmpty ? '<option value="">— выберите позицию —</option>' : ''}` +
+    S.cats.map((c) => { const g = S.items.filter((i) => i.active && i.category_id === c.id); return g.length ? `<optgroup label="${esc(c.name)}">${g.map((i) => `<option value="${i.id}">${esc(i.name)} (${i.stock} ${esc(i.unit)})</option>`).join('')}</optgroup>` : ''; }).join('') + `</select>`;
+}
+function paneReceive() {
+  const ordered = ((S.ov && S.ov.entries) || []).filter((e) => e.status === 'ordered' && e.item_id);
+  pane(`<div class="card"><h3>Поступление товара</h3><p class="small mut" style="margin-top:0">Добавьте то, что привезли. Остаток увеличится, а позиции исчезнут из списка «Заказано».</p>
+    ${ordered.length ? `<div class="small mut" style="margin-bottom:6px">Заказано:</div><div class="rowx" style="margin-bottom:10px">${ordered.map((e) => `<button class="btn sm ghost" data-act="recv-add" data-item="${e.item_id}">${esc(e.name)}</button>`).join('')}</div>` : ''}
+    <div class="rowx"><div class="grow">${itemSelect('rsel')}</div><input class="inp" id="rqty" type="number" inputmode="numeric" min="1" placeholder="Кол-во" style="width:100px"><button class="btn" data-act="recv-plus">Добавить</button></div></div>
+    <div id="rlist"></div>`);
+  drawRecv();
+}
+function drawRecv() {
+  const el = $('#rlist'); if (!el) return;
+  el.innerHTML = S.recvList.length ? `<div class="card" style="padding:0;overflow:hidden">${S.recvList.map((x, n) => { const it = itemById(x.item_id); return `<div class="ordrow"><div class="grow nm">${esc(it ? it.name : '')}</div><b>+${x.qty} ${esc(it ? it.unit : '')}</b><button class="btn sm ghost" data-act="recv-del" data-n="${n}">×</button></div>`; }).join('')}</div><button class="btn" data-act="recv-save">Принять на склад</button>` : '';
+}
+
+/* инвентаризация */
+function paneCount() {
+  let h = `<div class="card"><h3>Инвентаризация</h3><p class="small mut" style="margin-top:0">Впишите фактическое количество там, где пересчитали. Пустые поля не меняются. Если факт меньше учёта, разница будет записана как «неучтённый расход» и попадёт в статистику.</p></div>`;
+  S.cats.forEach((c) => {
+    const g = S.items.filter((i) => i.active && i.category_id === c.id); if (!g.length) return;
+    h += `<div class="list" style="margin-bottom:12px"><div class="gh">${esc(c.name)}</div>${g.map((i) => `<div class="row"><div class="rn"><div class="nm">${esc(i.name)}</div><div class="small mut">в учёте: ${i.stock} ${esc(i.unit)}</div></div><input class="inp cnt" data-id="${i.id}" data-was="${i.stock}" type="number" inputmode="numeric" min="0" placeholder="факт" style="width:92px"><span class="small diff" style="min-width:44px;text-align:right"></span></div>`).join('')}</div>`;
+  });
+  h += `<button class="btn" data-act="count-save">Сохранить результаты</button>`;
+  pane(h);
+}
+
+/* позиции */
+function paneItems() {
+  let h = `<div class="rowx" style="margin-bottom:12px"><button class="btn" data-act="item-new">+ Новая позиция</button><button class="btn alt" data-act="cat-new">+ Категория</button><button class="btn alt" data-act="import">Загрузить списком</button></div>`;
+  S.cats.forEach((c) => {
+    const g = S.items.filter((i) => i.category_id === c.id);
+    h += `<div class="list" style="margin-bottom:12px"><div class="gh rowx"><span class="grow">${esc(c.name)}</span><button class="linkbtn" data-act="cat-edit" data-id="${c.id}">переименовать</button></div>` +
+      (g.length ? g.map((i) => `<div class="row ${i.active ? '' : 'dim'}"><div class="rn"><div class="nm">${esc(i.name)}</div><div class="small mut">${i.stock} ${esc(i.unit)} · ${i.min_qty == null ? 'без минимума' : 'минимум ' + i.min_qty}${i.active ? '' : ' · скрыта'}</div></div><button class="btn sm alt" data-act="item-edit" data-id="${i.id}">Изменить</button></div>`).join('') : `<div class="empty">Пока нет позиций</div>`) + `</div>`;
+  });
+  pane(h);
+}
+function itemForm(it) {
+  const n = !it;
+  sheet(`<h3>${n ? 'Новая позиция' : 'Изменить позицию'}</h3>
+    <label class="field"><span>Категория</span><select class="inp" id="f-cat">${S.cats.map((c) => `<option value="${c.id}" ${it && it.category_id === c.id || (!it && String(S.cat) === String(c.id)) ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></label>
+    <label class="field"><span>Название</span><input class="inp" id="f-name" value="${esc(it ? it.name : '')}" maxlength="120"></label>
+    <label class="field"><span>Единица счёта</span><input class="inp" id="f-unit" list="units" value="${esc(it ? it.unit : 'шт')}" maxlength="20"><datalist id="units">${UNITS.map((u) => `<option value="${u}">`).join('')}</datalist></label>
+    <label class="field"><span>Минимум (оставьте пустым, если не нужен)</span><input class="inp" id="f-min" type="number" inputmode="numeric" min="0" value="${it && it.min_qty != null ? it.min_qty : ''}"></label>
+    ${n ? `<label class="field"><span>Сейчас на складе</span><input class="inp" id="f-qty" type="number" inputmode="numeric" min="0" value="0"></label>` : `<label class="chk"><input type="checkbox" id="f-act" ${it.active ? 'checked' : ''}> Показывать в списке</label>`}
+    <div class="acts"><button class="btn" data-act="item-save" data-id="${it ? it.id : ''}">Сохранить</button></div>`);
+}
+
+/* сотрудники */
+async function paneStaff() {
+  const list = await get('staff?select=id,name,active,failed_attempts,locked_until&order=name');
+  S.staffList = list;
+  let h = `<div class="rowx" style="margin-bottom:12px"><button class="btn" data-act="staff-new">+ Новый сотрудник</button></div><div class="list">` +
+    (list.length ? list.map((s) => { const locked = s.locked_until && new Date(s.locked_until) > new Date(); return `<div class="row ${s.active ? '' : 'dim'}"><div class="rn"><div class="nm">${esc(s.name)}</div><div class="meta">${s.active ? '' : '<span class="tag">отключён</span>'}${locked ? '<span class="tag bad">заблокирован</span>' : ''}</div></div>` +
+      `<button class="btn sm alt" data-act="staff-pin" data-id="${s.id}">Новый код</button>${locked ? `<button class="btn sm alt" data-act="staff-unlock" data-id="${s.id}">Разблок.</button>` : ''}<button class="btn sm ghost" data-act="staff-toggle" data-id="${s.id}" data-on="${s.active ? 0 : 1}">${s.active ? 'Отключить' : 'Включить'}</button></div>`; }).join('') : `<div class="empty">Добавьте ассистентов — для каждого программа создаст код из 4 цифр.</div>`) + `</div>`;
+  h += `<p class="small mut">Код показывается один раз — сразу передайте его сотруднику. После 5 неверных попыток вход блокируется на 15 минут.</p>`;
+  pane(h);
+}
+
+/* история */
+async function paneHistory() {
+  const mv = await get('movements?select=id,kind,delta,note,occurred_at,created_at,cancelled_at,cancelled_by,entered_by_admin,items(name,unit),staff(name)&order=created_at.desc&limit=150');
+  const kindTxt = { take: 'расход', receive: 'приход', adjust: 'инвентаризация', initial: 'начальный остаток' };
+  let h = `<div class="rowx" style="margin-bottom:12px"><button class="btn alt" data-act="logtake">+ Добавить забытый расход</button></div><div class="list">` +
+    (mv.length ? mv.map((m) => `<div class="row ${m.cancelled_at ? 'dim' : ''}"><div class="rn"><div class="nm">${esc(m.items ? m.items.name : '')}</div><div class="small mut">${when(m.occurred_at)} · ${kindTxt[m.kind] || m.kind}${m.staff ? ' · ' + esc(m.staff.name) : m.entered_by_admin ? ' · админ' : ''}${m.note && m.kind !== 'take' ? ' · ' + esc(m.note) : ''}${m.cancelled_at ? ' · отменено (' + esc(m.cancelled_by) + ')' : ''}</div></div><b style="color:${m.delta < 0 ? 'var(--bad)' : 'var(--ok)'}">${m.delta > 0 ? '+' : ''}${m.delta}</b>${m.cancelled_at ? '' : `<button class="btn sm ghost" data-act="mv-cancel" data-id="${m.id}">Отменить</button>`}</div>`).join('') : `<div class="empty">История пуста</div>`) + `</div>`;
+  pane(h);
+}
+
+/* данные */
+function paneData() {
+  pane(`<div class="card"><h3>Выгрузка в Excel (CSV)</h3><div class="rowx"><button class="btn alt" data-act="csv-stock">Остатки сейчас</button><button class="btn alt" data-act="csv-mv">История движений</button><button class="btn alt" data-act="csv-ana">Статистика расхода</button></div><p class="small mut">Файлы можно открыть в Excel — это же и резервная копия данных.</p></div>
+    <div class="card"><h3>Загрузить список позиций</h3><p class="small mut" style="margin-top:0">Удобно для первой инвентаризации.</p><button class="btn alt" data-act="import">Загрузить списком</button></div>
+    <div class="card"><h3>Пароль администратора</h3><button class="btn alt" data-act="chpass">Сменить пароль</button></div>`);
+}
+
+/* ============================ вход ============================ */
+async function loginSheet() {
+  const sh = sheet(`<h3>Кто вы?</h3><div class="loading">Загрузка…</div>`);
+  try {
+    const list = await rpc('list_staff');
+    sh.innerHTML = `<button class="x" data-act="close" aria-label="Закрыть">×</button><h3>Кто вы?</h3>` +
+      (list.length ? `<div class="pick">${list.map((s) => `<button data-act="pickstaff" data-id="${s.id}" data-name="${esc(s.name)}">${esc(s.name)}</button>`).join('')}</div>` : `<p class="mut">Сотрудники ещё не добавлены. Администратор может добавить их в разделе «Управление».</p>`) +
+      `<button class="linkbtn" data-act="adminlogin">Вход для администратора</button>`;
+  } catch (e) { sh.innerHTML = `<button class="x" data-act="close">×</button><h3>Нет связи</h3><p>${esc(errText(e))}</p><button class="linkbtn" data-act="adminlogin">Вход для администратора</button>`; }
+}
+let PIN = { id: null, name: '', v: '', busy: false };
+function pinSheet(id, name) {
+  PIN = { id, name, v: '', busy: false };
+  sheet(`<h3>${esc(name)}</h3><p class="mut" style="margin:-6px 0 0;text-align:center">Введите код из 4 цифр</p><div class="dots" id="dots"><i></i><i></i><i></i><i></i></div><div id="pinmsg" class="small" style="text-align:center;min-height:22px;color:var(--bad);margin-bottom:8px"></div>
+    <div class="pad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `<button data-act="pin" data-n="${n}">${n}</button>`).join('')}<button class="e"></button><button data-act="pin" data-n="0">0</button><button data-act="pin" data-n="x" aria-label="Стереть">⌫</button></div>
+    <label class="chk" style="justify-content:center;margin-top:14px"><input type="checkbox" id="remember"> Запомнить меня на 30 дней (только на своём телефоне)</label>`);
+}
+async function pinKey(n) {
+  if (PIN.busy) return;
+  if (n === 'x') PIN.v = PIN.v.slice(0, -1); else if (PIN.v.length < 4) PIN.v += n;
+  const dots = $('#dots'); if (!dots) return;
+  dots.className = 'dots'; [...dots.children].forEach((d, i) => d.classList.toggle('on', i < PIN.v.length));
+  if (PIN.v.length === 4) {
+    PIN.busy = true; $('#pinmsg').textContent = '';
+    try {
+      const r = await rpc('staff_login', { p_staff_id: PIN.id, p_pin: PIN.v, p_remember: $('#remember').checked });
+      if (r.ok) {
+        S.staff = { token: r.token, name: r.name, id: r.staff_id }; S.adminOn = false; LS.set('gam_staff', S.staff);
+        closeSheet(); S.view = 'stock'; toast('Здравствуйте, ' + r.name); await loadData(true); render(); return;
+      }
+      dots.className = 'dots err shake';
+      $('#pinmsg').textContent = r.error === 'LOCKED' ? 'Слишком много попыток. Подождите 15 минут или обратитесь к администратору.' : r.error === 'NOUSER' ? 'Сотрудник не найден или отключён' : `Неверный код. Осталось попыток: ${r.left}`;
+    } catch (e) { $('#pinmsg').textContent = errText(e); }
+    PIN.v = ''; PIN.busy = false; setTimeout(() => { const d = $('#dots'); if (d) { d.className = 'dots'; [...d.children].forEach((x) => x.classList.remove('on')); } }, 700);
+  }
+}
+function adminLoginSheet() {
+  sheet(`<h3>Вход для администратора</h3><label class="field"><span>Эл. почта</span><input class="inp" id="a-mail" type="email" autocomplete="username"></label>
+    <label class="field"><span>Пароль</span><input class="inp" id="a-pass" type="password" autocomplete="current-password"></label><div id="a-err" class="small" style="color:var(--bad);min-height:20px"></div>
+    <div class="acts"><button class="btn" data-act="adminenter">Войти</button></div>`);
+}
+async function adminEnter() {
+  const email = $('#a-mail').value.trim(), password = $('#a-pass').value; const err = $('#a-err'); err.textContent = '';
+  if (!email || !password) { err.textContent = 'Введите почту и пароль'; return; }
+  try {
+    const r = await fetch(SB + '/auth/v1/token?grant_type=password', { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+    const j = await r.json();
+    if (!r.ok) { err.textContent = 'Неверная почта или пароль'; return; }
+    admin = { access: j.access_token, refresh: j.refresh_token, exp: j.expires_at || Math.floor(Date.now() / 1000 + j.expires_in), email };
+    const ok = await rpc('claim_admin');
+    if (!ok) { admin = null; err.textContent = 'Эта учётная запись не является администратором склада'; return; }
+    LS.set('gam_admin', admin); S.adminOn = true; S.staff = null; LS.del('gam_staff');
+    closeSheet(); S.view = 'stock'; await loadData(true); render(); toast('Вы вошли как администратор');
+  } catch (e) { admin = null; err.textContent = errText(e); }
+}
+async function doLogout(silent) {
+  const t = S.staff && S.staff.token;
+  if (t) { try { await rpc('staff_logout', { p_token: t }); } catch (e) {} }
+  S.staff = null; S.adminOn = false; admin = null; LS.del('gam_staff'); LS.del('gam_admin'); S.basket = {}; S.view = 'stock'; S.ov = null; S.recents = [];
+  closeSheet(); render(); if (!silent) toast('Вы вышли');
+}
+
+/* ============================ действия ============================ */
+const val = (id) => { const e = document.getElementById(id); return e ? e.value : ''; };
+async function takeReview() {
+  const ids = Object.keys(S.basket); if (!ids.length) return;
+  const sh = sheet(`<h3>Записать расход</h3><div class="list">${ids.map((id) => { const it = itemById(+id); return `<div class="row"><div class="rn"><div class="nm">${esc(it ? it.name : '')}</div><div class="small mut">на складе: ${it ? it.stock : '?'} ${esc(it ? it.unit : '')}</div></div><div class="step"><button data-act="rdec" data-id="${id}">−</button><span>${S.basket[id]}</span><button data-act="rinc" data-id="${id}">+</button></div></div>`; }).join('')}</div>
+    <div class="small mut" style="margin-top:8px">${role() === 'admin' ? 'Расход будет записан от имени администратора.' : 'Запись будет сохранена на ваше имя: ' + esc(S.staff.name)}</div>
+    <div class="acts"><button class="btn ghost" data-act="close">Назад</button><button class="btn" data-act="takego">Записать</button></div>`);
+  return sh;
+}
+async function takeGo(btn) {
+  btn.disabled = true;
+  const items = Object.entries(S.basket).map(([id, qty]) => ({ item_id: +id, qty }));
+  const r = await guard(() => rpc('take_items', { p_token: tok(), p_items: items }));
+  btn.disabled = false; if (!r) return;
+  S.basket = {}; closeSheet();
+  await loadData(true);
+  const mine = S.recents.filter((x) => x.batch === r.batch_id).map((x) => x.id);
+  toast('Записано: ' + r.count + ' поз.', mine.length ? { label: 'Отменить', ms: 9000, action: () => undoIds(mine) } : {});
+  render();
+}
+async function undoIds(ids) {
+  const r = await guard(() => rpc('cancel_movements', { p_token: tok(), p_ids: ids }));
+  if (r) { toast(r.cancelled ? 'Запись отменена' : 'Уже нельзя отменить'); await loadData(true); }
+}
+function orderSheet(preItem) {
+  sheet(`<h3>Добавить в заказ</h3>
+    <div class="rowx" style="margin-bottom:10px"><button class="btn sm" data-act="omode" data-m="item" id="om-item">Позиция со склада</button><button class="btn sm ghost" data-act="omode" data-m="new" id="om-new">Новая позиция</button></div>
+    <div id="o-item" class="field"><span style="display:block;font-weight:600;font-size:14px;color:var(--slate);margin-bottom:5px">Что заказать</span>${itemSelect('o-sel')}</div>
+    <label id="o-new" class="field hide"><span>Название нового материала</span><input class="inp" id="o-name" maxlength="120" placeholder="Например: адгезив, ..."></label>
+    <label class="field"><span>Врач (необязательно)</span><input class="inp" id="o-doc" maxlength="60"></label>
+    <label class="field"><span>Комментарий (необязательно)</span><input class="inp" id="o-note" maxlength="160" placeholder="Например: нужно к следующему приёму"></label>
+    <div class="banner warn small" style="margin:0 0 4px">Не записывайте имена и данные пациентов.</div>
+    <div class="acts"><button class="btn" data-act="ordersave">Добавить</button></div>`);
+  if (preItem) $('#o-sel').value = String(preItem);
+}
+async function orderSave() {
+  const isNew = !$('#o-new').classList.contains('hide');
+  const itemId = isNew ? null : +val('o-sel') || null; const name = val('o-name').trim();
+  if (!itemId && !name) { toast('Выберите позицию или впишите название', { bad: true }); return; }
+  const r = await guard(() => rpc('add_order', { p_token: tok(), p_item_id: itemId, p_free_name: isNew ? name : null, p_doctor: val('o-doc'), p_note: val('o-note') }));
+  if (!r) return;
+  if (r.ok) { closeSheet(); toast('Добавлено в список заказа'); await loadData(true); } else toast('Эта позиция уже в списке заказа', { bad: true });
+}
+async function flagItem(id) {
+  const r = await guard(() => rpc('add_order', { p_token: tok(), p_item_id: +id, p_free_name: null, p_doctor: null, p_note: 'Заканчивается' }));
+  if (r) { toast(r.ok ? 'Добавлено в заказ' : 'Уже в списке заказа'); await loadData(true); }
+}
+function selectedOrder() {
+  const eids = [...document.querySelectorAll('[data-eid]:checked')].map((x) => +x.dataset.eid);
+  const autos = [...document.querySelectorAll('[data-auto]:checked')].map((x) => +x.dataset.auto);
+  return { eids, autos };
+}
+function orderText() {
+  const ov = S.ov || { auto: [], entries: [] }; const lines = [];
+  (ov.auto || []).filter((a) => !a.in_manual).forEach((a) => lines.push(`${a.name} (${a.category}) — остаток ${a.stock} ${a.unit}`));
+  ov.entries.filter((e) => e.status === 'open').forEach((e) => lines.push(`${e.name}${e.doctor ? ' — врач ' + e.doctor : ''}${e.note ? ' (' + e.note + ')' : ''}`));
+  return 'Заказ ' + new Date().toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' }) + '\n' + lines.map((l, i) => `${i + 1}. ${l}`).join('\n');
+}
+function recvQty(entryId, itemId) {
+  const it = itemById(+itemId);
+  sheet(`<h3>Получено: ${esc(it ? it.name : 'позиция')}</h3>${it ? `<label class="field"><span>Сколько привезли (${esc(it.unit)})</span><input class="inp" id="rq" type="number" inputmode="numeric" min="1"></label>` : `<p class="mut">Позиции нет на складе. Сначала добавьте её в «Управление → Позиции», затем оформите приход.</p>`}
+    <div class="acts">${it ? `<button class="btn" data-act="recvgo" data-id="${entryId}" data-item="${itemId}">Принять на склад</button>` : `<button class="btn" data-act="recvfree" data-id="${entryId}">Отметить как полученное</button>`}</div>`);
+}
+
+/* ---------- импорт ---------- */
+function importSheet() {
+  sheet(`<h3>Загрузить список позиций</h3><p class="small mut" style="margin-top:0">Одна строка — одна позиция. Поля через «;» или Tab (можно вставить из Excel):<br><b>Категория; Название; Единица; Количество; Минимум</b><br>Минимум можно не писать. Примеры категорий: Терапия, Ортодонтия, Ортопедия, Хирургия, Общее, Расходники.</p>
+    <textarea class="inp" id="imp" placeholder="Расходники; Перчатки нитриловые M; упаковка; 6; 2&#10;Терапия; Аппликаторы; упаковка; 1&#10;Хирургия; Шовный материал 4-0; шт; 12; 5"></textarea>
+    <div id="imp-prev" class="small mut" style="margin-top:6px"></div><div class="acts"><button class="btn" data-act="impgo">Загрузить</button></div>`);
+}
+function parseImport(t) {
+  return t.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).map((l) => {
+    const p = (l.includes('\t') ? l.split('\t') : l.split(';')).map((x) => x.trim());
+    return { category: p[0], name: p[1], unit: p[2] || 'шт', qty: p[3] ? parseInt(p[3], 10) : 0, min: p[4] ? parseInt(p[4], 10) : null };
+  }).filter((r) => r.category && r.name);
+}
+
+/* ============================ обработчик кликов ============================ */
+document.addEventListener('click', async (e) => {
+  const t = e.target.closest('[data-act]'); if (!t) return;
+  const a = t.dataset.act; const d = t.dataset;
+  const refreshList = () => { const l = $('#list'); if (l) l.innerHTML = listHTML(); renderBasket(); };
+  switch (a) {
+    case 'close': closeSheet(); break;
+    case 'login': loginSheet(); break;
+    case 'adminlogin': adminLoginSheet(); break;
+    case 'adminenter': t.disabled = true; await adminEnter(); t.disabled = false; break;
+    case 'pickstaff': pinSheet(+d.id, d.name); break;
+    case 'pin': pinKey(d.n); break;
+    case 'account': sheet(`<h3>${role() === 'admin' ? 'Администратор' : esc(S.staff.name)}</h3><div class="acts"><button class="btn ghost" data-act="close">Закрыть</button><button class="btn bad" data-act="logout">Выйти</button></div>`); break;
+    case 'logout': doLogout(); break;
+    case 'nav': S.view = d.v; render(); window.scrollTo(0, 0); break;
+    case 'reload': loadData(); break;
+    case 'remdone': LS.set('gam_rem', mskDate()); render(); break;
+    case 'cat': S.cat = d.id; render(); break;
+    case 'inc': S.basket[d.id] = (S.basket[d.id] || 0) + 1; refreshList(); break;
+    case 'dec': { const n = (S.basket[d.id] || 0) - 1; if (n > 0) S.basket[d.id] = n; else delete S.basket[d.id]; refreshList(); break; }
+    case 'rinc': S.basket[d.id]++; takeReview(); break;
+    case 'rdec': { const n = S.basket[d.id] - 1; if (n > 0) S.basket[d.id] = n; else delete S.basket[d.id]; if (Object.keys(S.basket).length) takeReview(); else closeSheet(); refreshList(); break; }
+    case 'clear': S.basket = {}; refreshList(); break;
+    case 'review': takeReview(); break;
+    case 'takego': await takeGo(t); break;
+    case 'undo': undoIds(d.ids.split(',').map(Number)); break;
+    case 'flag': flagItem(d.id); break;
+    case 'addorder': orderSheet(); break;
+    case 'omode': { const n = d.m === 'new'; $('#o-item').classList.toggle('hide', n); $('#o-new').classList.toggle('hide', !n); $('#om-item').className = 'btn sm' + (n ? ' ghost' : ''); $('#om-new').className = 'btn sm' + (n ? '' : ' ghost'); break; }
+    case 'ordersave': await orderSave(); break;
+    case 'copyorder': try { await navigator.clipboard.writeText(orderText()); toast('Список скопирован'); } catch (err) { sheet(`<h3>Список заказа</h3><textarea class="inp" style="min-height:220px" readonly>${esc(orderText())}</textarea>`); } break;
+    case 'markordered': {
+      const { eids, autos } = selectedOrder(); if (!eids.length && !autos.length) { toast('Ничего не выбрано', { bad: true }); break; }
+      const r = await guard(() => rpc('admin_mark_ordered', { p_ids: eids, p_auto_items: autos })); if (r) { toast('Отмечено как заказанное'); await loadData(true); } break;
+    }
+    case 'ocancel': { const r = await guard(() => rpc('admin_order_set', { p_id: +d.id, p_status: 'cancelled' })); if (r) await loadData(true); break; }
+    case 'oback': { const r = await guard(() => rpc('admin_order_set', { p_id: +d.id, p_status: 'open' })); if (r) await loadData(true); break; }
+    case 'oreceive': recvQty(d.id, d.item); break;
+    case 'recvgo': { const q = parseInt(val('rq'), 10); if (!q || q < 1) { toast('Введите количество', { bad: true }); break; } const r = await guard(() => rpc('admin_receive', { p_items: [{ item_id: +d.item, qty: q }] })); if (r) { closeSheet(); toast('Принято на склад'); await loadData(true); } break; }
+    case 'recvfree': { const r = await guard(() => rpc('admin_order_set', { p_id: +d.id, p_status: 'received' })); if (r) { closeSheet(); await loadData(true); } break; }
+    /* админ */
+    case 'atab': S.atab = d.k; render(); break;
+    case 'range': S.range = +d.d; showAdmin(); break;
+    case 'series': guard(() => openSeries(d.id)); break;
+    case 'seriesb': guard(() => openSeries(d.id, d.b)); break;
+    case 'csv-ana': { const to = new Date(); const rows = ANA.length ? ANA : await rpc('admin_analytics', { p_from: dayStr(addDays(to, -(S.range - 1))), p_to: dayStr(to) });
+      csvDownload('rashod_' + mskDate() + '.csv', [['Категория', 'Позиция', 'Ед.', 'Расход', 'Неучтённое', 'Приход', 'В день', 'В неделю', 'В месяц', 'Остаток', 'Хватит на (дн.)']].concat(rows.map((r) => [r.category, r.name, r.unit, r.total, r.unrec, r.received, r.per_day, r.per_week, r.per_month, r.stock, r.days_left ?? '']))); break; }
+    case 'csv-stock': csvDownload('ostatki_' + mskDate() + '.csv', [['Категория', 'Позиция', 'Ед.', 'Остаток', 'Минимум']].concat(S.items.filter((i) => i.active).map((i) => [(catById(i.category_id) || {}).name, i.name, i.unit, i.stock, i.min_qty ?? '']))); break;
+    case 'csv-mv': { const mv = await guard(() => get('movements?select=occurred_at,kind,delta,note,cancelled_at,items(name,unit),staff(name)&order=occurred_at.desc&limit=5000'));
+      if (mv) csvDownload('dvizhenie_' + mskDate() + '.csv', [['Дата', 'Тип', 'Позиция', 'Ед.', 'Кол-во', 'Кто', 'Примечание', 'Отменено']].concat(mv.map((m) => [when(m.occurred_at), m.kind, m.items && m.items.name, m.items && m.items.unit, m.delta, m.staff ? m.staff.name : 'админ', m.note || '', m.cancelled_at ? 'да' : '']))); break; }
+    case 'recv-plus': { const id = +val('rsel'), q = parseInt(val('rqty'), 10); if (!id || !q || q < 1) { toast('Выберите позицию и количество', { bad: true }); break; } S.recvList.push({ item_id: id, qty: q }); $('#rqty').value = ''; drawRecv(); break; }
+    case 'recv-add': { $('#rsel').value = d.item; $('#rqty').focus(); break; }
+    case 'recv-del': S.recvList.splice(+d.n, 1); drawRecv(); break;
+    case 'recv-save': { const r = await guard(() => rpc('admin_receive', { p_items: S.recvList })); if (r) { S.recvList = []; toast('Принято на склад'); await loadData(true); } break; }
+    case 'count-save': {
+      const counts = [...document.querySelectorAll('.cnt')].filter((x) => x.value !== '').map((x) => ({ item_id: +x.dataset.id, counted: parseInt(x.value, 10) }));
+      if (!counts.length) { toast('Не введено ни одного количества', { bad: true }); break; }
+      const r = await guard(() => rpc('admin_stocktake', { p_counts: counts, p_note: 'Инвентаризация' })); if (!r) break;
+      await loadData(true);
+      const ch = r.changes || [];
+      sheet(`<h3>Инвентаризация сохранена</h3>${ch.length ? `<div class="tw"><table><thead><tr><th>Позиция</th><th>было</th><th>стало</th><th>разница</th></tr></thead><tbody>${ch.map((c) => { const it = itemById(c.item_id); return `<tr><td>${esc(it ? it.name : '')}</td><td>${c.before}</td><td>${c.after}</td><td class="${c.diff < 0 ? 'neg' : ''}">${c.diff > 0 ? '+' : ''}${c.diff}</td></tr>`; }).join('')}</tbody></table></div><p class="small mut">Отрицательная разница записана как неучтённый расход.</p>` : '<p>Расхождений нет — всё сходится.</p>'}`);
+      break;
+    }
+    case 'item-new': itemForm(null); break;
+    case 'item-edit': itemForm(itemById(+d.id)); break;
+    case 'item-save': {
+      const cat = +val('f-cat'), name = val('f-name').trim(), unit = val('f-unit').trim() || 'шт', minv = val('f-min').trim() === '' ? null : parseInt(val('f-min'), 10);
+      if (!name) { toast('Введите название', { bad: true }); break; }
+      let r;
+      if (!d.id) { const c = catById(cat); r = await guard(() => rpc('admin_import_items', { p_rows: [{ category: c.name, name, unit, qty: String(parseInt(val('f-qty'), 10) || 0), min: minv == null ? '' : String(minv) }] })); if (r && !r.created) { toast('Такая позиция уже есть в этой категории', { bad: true }); break; } }
+      else r = await guard(() => rpc('admin_save_item', { p_id: +d.id, p_category_id: cat, p_name: name, p_unit: unit, p_min: minv, p_active: $('#f-act').checked }));
+      if (r && r.ok !== false) { closeSheet(); toast('Сохранено'); await loadData(true); } else if (r) toast('Такая позиция уже есть', { bad: true });
+      break;
+    }
+    case 'cat-new': case 'cat-edit': {
+      const c = a === 'cat-edit' ? catById(+d.id) : null;
+      sheet(`<h3>${c ? 'Переименовать категорию' : 'Новая категория'}</h3><label class="field"><span>Название</span><input class="inp" id="c-name" value="${esc(c ? c.name : '')}" maxlength="40"></label><div class="acts"><button class="btn" data-act="cat-save" data-id="${c ? c.id : ''}">Сохранить</button></div>`); break;
+    }
+    case 'cat-save': { const r = await guard(() => rpc('admin_save_category', { p_id: d.id ? +d.id : null, p_name: val('c-name'), p_sort: null })); if (r) { if (r.ok) { closeSheet(); await loadData(true); } else toast('Категория с таким названием уже есть', { bad: true }); } break; }
+    case 'import': importSheet(); break;
+    case 'impgo': {
+      const rows = parseImport(val('imp')); if (!rows.length) { toast('Не нашёл ни одной строки', { bad: true }); break; }
+      const r = await guard(() => rpc('admin_import_items', { p_rows: rows.map((x) => ({ category: x.category, name: x.name, unit: x.unit, qty: String(x.qty || 0), min: x.min == null || isNaN(x.min) ? '' : String(x.min) })) }));
+      if (r) { closeSheet(); toast(`Добавлено: ${r.created}, пропущено (уже есть): ${r.skipped}`, { ms: 7000 }); await loadData(true); } break;
+    }
+    case 'staff-new': sheet(`<h3>Новый сотрудник</h3><label class="field"><span>Имя (как будет в списке)</span><input class="inp" id="s-name" maxlength="40" placeholder="Например: Алина"></label><div class="acts"><button class="btn" data-act="staff-add">Создать и получить код</button></div>`); break;
+    case 'staff-add': { const r = await guard(() => rpc('admin_staff_create', { p_name: val('s-name') })); if (r) { if (r.ok) { pinShow(val('s-name'), r.pin); showAdmin(); } else toast('Сотрудник с таким именем уже есть', { bad: true }); } break; }
+    case 'staff-pin': { const s = S.staffList.find((x) => x.id === +d.id); const r = await guard(() => rpc('admin_staff_reset_pin', { p_id: +d.id })); if (r) pinShow(s ? s.name : '', r.pin); break; }
+    case 'staff-unlock': { await guard(() => rpc('admin_staff_unlock', { p_id: +d.id })); showAdmin(); break; }
+    case 'staff-toggle': { const r = await guard(() => rpc('admin_staff_set_active', { p_id: +d.id, p_active: d.on === '1' })); if (r && r.ok === false) toast('Активный сотрудник с таким именем уже есть', { bad: true }); showAdmin(); break; }
+    case 'mv-cancel': { const r = await guard(() => rpc('cancel_movements', { p_token: null, p_ids: [+d.id] })); if (r) { toast('Запись отменена'); await loadData(true); } break; }
+    case 'logtake': logTakeSheet(); break;
+    case 'lt-add': { const id = +val('lt-sel'), q = parseInt(val('lt-qty'), 10); if (!id || !q) break; S.logList.push({ item_id: id, qty: q }); drawLog(); break; }
+    case 'lt-del': S.logList.splice(+d.n, 1); drawLog(); break;
+    case 'lt-go': {
+      if (!S.logList.length) { toast('Добавьте хотя бы одну позицию', { bad: true }); break; }
+      const when_ = val('lt-when'); const r = await guard(() => rpc('admin_log_take', { p_staff_id: +val('lt-staff'), p_items: S.logList, p_when: when_ ? new Date(when_).toISOString() : null }));
+      if (r) { S.logList = []; closeSheet(); toast('Расход добавлен'); await loadData(true); } break;
+    }
+    case 'chpass': sheet(`<h3>Новый пароль</h3><label class="field"><span>Минимум 8 символов</span><input class="inp" id="np" type="password" autocomplete="new-password"></label><div class="acts"><button class="btn" data-act="chpass-go">Сохранить</button></div>`); break;
+    case 'chpass-go': { const p = val('np'); if (p.length < 8) { toast('Слишком короткий пароль', { bad: true }); break; } const r = await guard(() => api('/auth/v1/user', { method: 'PUT', body: JSON.stringify({ password: p }) })); if (r) { closeSheet(); toast('Пароль изменён'); } break; }
+  }
+});
+function pinShow(name, pin) {
+  sheet(`<h3>Код для: ${esc(name)}</h3><div class="pin-show">${esc(pin)}</div><p class="small mut" style="text-align:center">Передайте код сотруднику. Он показывается один раз. Если забудете — нажмите «Новый код».</p><div class="acts"><button class="btn" data-act="close">Готово</button></div>`);
+}
+async function logTakeSheet() {
+  const list = await guard(() => get('staff?select=id,name&active=eq.true&order=name')); if (!list) return;
+  S.logList = [];
+  const now = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  sheet(`<h3>Добавить забытый расход</h3><label class="field"><span>Кто брал</span><select class="inp" id="lt-staff">${list.map((s) => `<option value="${s.id}">${esc(s.name)}</option>`).join('')}</select></label>
+    <label class="field"><span>Когда</span><input class="inp" id="lt-when" type="datetime-local" value="${now}"></label>
+    <div class="rowx"><div class="grow">${itemSelect('lt-sel')}</div><input class="inp" id="lt-qty" type="number" min="1" inputmode="numeric" placeholder="шт" style="width:80px"><button class="btn sm" data-act="lt-add">+</button></div><div id="lt-list" style="margin-top:8px"></div>
+    <div class="acts"><button class="btn" data-act="lt-go">Записать</button></div>`);
+}
+function drawLog() {
+  const el = $('#lt-list'); if (!el) return;
+  el.innerHTML = S.logList.map((x, n) => { const it = itemById(x.item_id); return `<div class="rowx small" style="margin-bottom:4px"><span class="grow">${esc(it ? it.name : '')} — ${x.qty} ${esc(it ? it.unit : '')}</span><button class="btn sm ghost" data-act="lt-del" data-n="${n}">×</button></div>`; }).join('');
+}
+document.addEventListener('input', (e) => {
+  if (e.target.id === 'q') { S.q = e.target.value; const l = $('#list'); if (l) l.innerHTML = listHTML(); }
+  else if (e.target.id === 'imp') { const n = parseImport(e.target.value).length; $('#imp-prev').textContent = n ? `Распознано позиций: ${n}` : ''; }
+  else if (e.target.classList && e.target.classList.contains('cnt')) {
+    const was = +e.target.dataset.was, v = e.target.value === '' ? null : parseInt(e.target.value, 10); const out = e.target.parentElement.querySelector('.diff');
+    if (v == null || isNaN(v)) out.textContent = ''; else { const df = v - was; out.textContent = df === 0 ? '✓' : (df > 0 ? '+' : '') + df; out.style.color = df < 0 ? 'var(--bad)' : df > 0 ? 'var(--ok)' : 'var(--mut)'; }
+  }
+});
+
+/* ============================ запуск ============================ */
+async function boot() {
+  renderBrand(); renderWho();
+  if (admin) {
+    try {
+      if (admin.exp - Date.now() / 1000 < 90) await refreshAdmin();
+      if (admin && (await rpc('claim_admin'))) S.adminOn = true; else { admin = null; LS.del('gam_admin'); }
+    } catch (e) { /* без связи — попробуем позже */ S.adminOn = !!admin; }
+  }
+  if (!S.adminOn && S.staff) {
+    try { const c = await rpc('session_check', { p_token: S.staff.token }); if (!c.ok) { S.staff = null; LS.del('gam_staff'); } } catch (e) {}
+  }
+  await loadData();
+  setInterval(() => { if (document.visibilityState === 'visible' && !document.querySelector('.ov') && !(S.view === 'admin') && document.activeElement !== $('#q')) loadData(true); }, 45000);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') loadData(true); });
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+boot();
+</script>
+</body>
+</html>
