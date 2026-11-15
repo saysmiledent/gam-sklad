@@ -49,6 +49,7 @@ main{max-width:980px;margin:0 auto;padding:14px 16px 0}
 .small{font-size:13.5px}
 h2{font-size:20px;margin:6px 0 10px}
 
+.tabs,.sub{position:relative}
 .tabs{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex:none;border:1px solid var(--line);background:#fff;color:var(--slate);border-radius:999px;padding:9px 15px;font-weight:600;min-height:42px;white-space:nowrap}
@@ -357,7 +358,13 @@ function render() {
   if (S.view === 'orders' && role()) html += ordersHTML();
   else if (S.view === 'admin' && role() === 'admin') html += adminShell();
   else html += stockHTML();
+  const keep = [...document.querySelectorAll('.tabs,.sub')].map((el) => el.scrollLeft);
   main.innerHTML = html + footHTML();
+  document.querySelectorAll('.tabs,.sub').forEach((el, n) => {
+    el.scrollLeft = keep[n] || 0;
+    const sel = el.querySelector('[aria-selected=true]');
+    if (sel) { const l = sel.offsetLeft, r = l + sel.offsetWidth; if (l < el.scrollLeft) el.scrollLeft = Math.max(0, l - 12); else if (r > el.scrollLeft + el.clientWidth) el.scrollLeft = r - el.clientWidth + 12; }
+  });
   if (S.view === 'admin' && role() === 'admin') showAdmin();
 }
 
@@ -484,17 +491,32 @@ async function openSeries(id, bucket = 'day') {
 
 /* приход */
 const norm = (x) => String(x || '').toLowerCase().replace(/ё/g, 'е');
+const KB_RU = 'йцукенгшщзхъфывапролджэячсмитьбю', KB_EN = "qwertyuiop[]asdfghjkl;'zxcvbnm,.";
+const swapKb = (x) => x.replace(/[а-яё]/g, (c) => { const k = KB_RU.indexOf(c); return k >= 0 ? KB_EN[k] : c; });
+const TR = { а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f', х: 'h', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'sh', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya' };
+/* «скелет» слова: согласные латиницей — чтобы «эсфлоу» находило «Es Flow» */
+function skel(x) {
+  let t = norm(x).replace(/[а-я]/g, (c) => TR[c] ?? '').replace(/c/g, 'k').replace(/q/g, 'k').replace(/x/g, 'ks');
+  t = t.replace(/[^a-z0-9]/g, '').replace(/[aeiouyw]/g, '');
+  return t.replace(/(.)\1+/g, '$1');
+}
+function matchName(q, name) {
+  const n = norm(name); const q1 = norm(q).trim(); if (!q1) return 0;
+  const forms = [q1]; const sw = swapKb(q1); if (sw !== q1) forms.push(sw);
+  for (const f of forms) {
+    const toks = f.split(/\s+/).filter(Boolean);
+    if (toks.every((t) => n.includes(t))) {
+      const words = n.split(/[\s\-\/(),.+:%]+/);
+      return n.startsWith(toks[0]) ? 0 : words.some((w) => w.startsWith(toks[0])) ? 1 : 2;
+    }
+  }
+  const sk = skel(q1);
+  return (sk.length >= 3 || (sk.length === 2 && q1.length >= 4)) && skel(n).includes(sk) ? 3 : -1;
+}
 function rankItems(q, list) {
-  const toks = norm(q).trim().split(/\s+/).filter(Boolean);
-  if (!toks.length) return list.slice();
+  if (!norm(q).trim()) return list.slice();
   const out = [];
-  list.forEach((i) => {
-    const n = norm(i.name);
-    if (!toks.every((t) => n.includes(t))) return;
-    const words = n.split(/[\s\-\/(),.+:%]+/);
-    const r = n.startsWith(toks[0]) ? 0 : words.some((w) => w.startsWith(toks[0])) ? 1 : 2;
-    out.push([r, n, i]);
-  });
+  list.forEach((i) => { const r = matchName(q, i.name); if (r >= 0) out.push([r, norm(i.name), i]); });
   out.sort((a, b) => a[0] - b[0] || a[1].localeCompare(b[1], 'ru'));
   return out.map((x) => x[2]);
 }
@@ -662,8 +684,7 @@ function drawJournal(rebuildWho) {
   el.innerHTML = out + '</div>';
 }
 function journalFiltered() {
-  const toks = norm(JR.q).trim().split(/\s+/).filter(Boolean);
-  return JR.rows.filter((m) => (!JR.kind || m.kind === JR.kind) && (!JR.who || whoOf(m) === JR.who) && (!toks.length || toks.every((t) => norm(m.items ? m.items.name : '').includes(t))));
+  return JR.rows.filter((m) => (!JR.kind || m.kind === JR.kind) && (!JR.who || whoOf(m) === JR.who) && matchName(JR.q, m.items ? m.items.name : '') >= 0);
 }
 
 /* данные */
@@ -985,8 +1006,7 @@ document.addEventListener('input', (e) => {
   if (e.target.dataset && e.target.dataset.combo) { const id = e.target.dataset.combo; const h = $('#' + id); if (h) h.value = ''; comboShow(id); }
   else if (e.target.id === 'jr-q') { JR.q = e.target.value; drawJournal(false); }
   else if (e.target.dataset && e.target.dataset.filter) {
-    const toks = norm(e.target.value).trim().split(/\s+/).filter(Boolean);
-    document.querySelectorAll('#apane .row[data-n]').forEach((r) => r.classList.toggle('hide', !toks.every((t) => r.dataset.n.includes(t))));
+    document.querySelectorAll('#apane .row[data-n]').forEach((r) => r.classList.toggle('hide', matchName(e.target.value, r.dataset.n) < 0));
   }
   else if (e.target.id === 'q') { S.q = e.target.value; const l = $('#list'); if (l) l.innerHTML = listHTML(); }
   else if (e.target.id === 'imp') { S.impOk = false; const g = $('[data-act=impgo]'); if (g) g.textContent = 'Загрузить'; const n = parseImport(e.target.value).length; $('#imp-prev').textContent = n ? `Распознано позиций: ${n}` : ''; }
