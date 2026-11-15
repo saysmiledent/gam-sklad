@@ -1,0 +1,1228 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GAM CLINIC — Лаборатория</title>
+<meta name="description" content="Связь клиники GAM CLINIC с зуботехнической лабораторией">
+<meta name="theme-color" content="#3b66a6">
+<meta name="color-scheme" content="light">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="GAM Лаб">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{
+  --bg:#f7f6f3;--card:#fff;--ink:#2a3038;--mut:#68717a;--slate:#616a73;--blue:#88ace0;--deep:#3b66a6;
+  --tint:#eaf1fa;--line:#e4e1da;--warn:#a85a08;--warnbg:#fdf0dc;--bad:#b42318;--badbg:#fde8e6;
+  --ok:#2b7554;--okbg:#e3f2ea;--yel:#8a6d00;--yelbg:#fff5cc;--r:14px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--deep)}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.hide{display:none!important}
+
+.top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
+  padding:calc(9px + env(safe-area-inset-top)) 16px 9px}
+.top-in{max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto;border:0;background:none;padding:0;text-align:left}
+.brand img{height:30px;width:auto;display:block}
+.brand .bt{display:flex;flex-direction:column;line-height:1.1}
+.brand b{font-size:18px;font-weight:700;letter-spacing:.16em;color:var(--slate)}
+.brand small{font-size:12.5px;color:var(--deep);letter-spacing:.06em;margin-top:3px;font-weight:600}
+.chip-user{border:1px solid #cddcf0;background:var(--tint);border-radius:999px;padding:7px 14px;font-weight:600;color:var(--deep);min-height:40px;max-width:46vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.live{width:9px;height:9px;border-radius:50%;background:#c9c6be;display:inline-block;margin-right:6px;vertical-align:middle}
+.live.on{background:#3aa676}
+
+main{max-width:1280px;margin:0 auto;padding:14px 16px 0}
+.narrow{max-width:860px;margin:0 auto}
+.banner{border-radius:12px;padding:11px 14px;margin:0 0 12px;font-size:15px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.banner.info{background:var(--tint);color:#27497a}
+.banner.warn{background:var(--warnbg);color:var(--warn)}
+.banner.bad{background:var(--badbg);color:var(--bad)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:0 0 12px}
+.card h3{margin:0 0 10px;font-size:16px;display:flex;align-items:center;gap:8px}
+.card h3 .grow{flex:1}
+.mut{color:var(--mut)}
+.small{font-size:13.5px}
+h2{font-size:21px;margin:4px 0 10px}
+
+.toolbar{display:flex;gap:8px;align-items:center;margin:0 0 10px;flex-wrap:wrap}
+.search{flex:1;min-width:180px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:11px 14px;min-height:46px}
+.tgl{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 14px;font-weight:600;color:var(--slate);min-height:46px}
+.tgl[aria-pressed=true]{background:var(--slate);border-color:var(--slate);color:#fff}
+
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;border:1px solid var(--line);background:#fff;color:var(--slate);border-radius:999px;padding:8px 14px;font-weight:600;min-height:42px;white-space:nowrap}
+.tab small{font-weight:600;color:var(--mut);margin-left:5px}
+.tab[aria-selected=true]{background:var(--deep);border-color:var(--deep);color:#fff}
+.tab[aria-selected=true] small{color:#d6e3f6}
+.tab.alert{color:var(--bad);border-color:#f1c3be}
+.tab.alert[aria-selected=true]{background:var(--bad);border-color:var(--bad);color:#fff}
+
+.cols{display:block}
+.col{display:none}
+.col.on{display:block}
+.col>h4{display:none}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+@media(min-width:1000px){
+  .tabs.mob{display:none}
+  .cols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:start}
+  .col{display:block;background:#efede8;border-radius:16px;padding:10px;min-height:120px}
+  .col.attn{grid-column:1/-1;background:#fbeeea}
+  .col.attn .cards{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+  .col.attn.empty-col{display:none}
+  .col>h4{display:flex;justify-content:space-between;margin:2px 4px 10px;font-size:14px;color:var(--slate)}
+  .col:not(.attn) .cards{grid-template-columns:1fr}
+}
+.oc{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:14px;padding:11px 12px;position:relative}
+.oc:hover{border-color:#c7d6ec}
+.oc.r{border-left:5px solid var(--bad)}
+.oc.o{border-left:5px solid #e08a2c}
+.oc.y{border-left:5px solid #d9b100}
+.oc .l1{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--mut);font-weight:600}
+.oc .fio{font-weight:700;margin:3px 0 1px;overflow-wrap:anywhere}
+.oc .wk{font-size:14px;color:var(--slate)}
+.meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;align-items:center}
+.tag{font-size:12.5px;border-radius:999px;padding:2px 9px;background:#eee;color:var(--slate);font-weight:600;white-space:nowrap}
+.tag.bad{background:var(--badbg);color:var(--bad)}
+.tag.warn{background:var(--warnbg);color:var(--warn)}
+.tag.yel{background:var(--yelbg);color:var(--yel)}
+.tag.ok{background:var(--okbg);color:var(--ok)}
+.tag.blue{background:var(--tint);color:var(--deep)}
+.tag.dark{background:var(--deep);color:#fff}
+.empty{padding:22px 12px;text-align:center;color:var(--mut);font-size:14.5px}
+.fab{position:fixed;right:18px;bottom:calc(80px + env(safe-area-inset-bottom));z-index:26;border:0;background:var(--deep);color:#fff;border-radius:999px;padding:14px 20px;font-weight:700;box-shadow:0 8px 24px rgba(30,60,110,.3);min-height:52px}
+
+nav.bar{position:fixed;left:0;right:0;bottom:0;z-index:24;background:#fff;border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+nav.bar div{max-width:760px;margin:0 auto;display:flex;gap:6px}
+nav.bar button{flex:1;border:0;background:none;border-radius:12px;padding:6px 4px;color:var(--mut);font-weight:600;font-size:13.5px;min-height:52px;position:relative;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav.bar button svg{width:22px;height:22px}
+nav.bar button[aria-current=page]{background:var(--tint);color:var(--deep)}
+nav.bar .dot{position:absolute;top:2px;left:calc(50% + 10px);background:var(--bad);color:#fff;border-radius:999px;font-size:11px;min-width:18px;height:18px;line-height:18px;padding:0 5px;font-weight:700}
+
+.btn{border:0;background:var(--deep);color:#fff;border-radius:12px;padding:11px 16px;font-weight:700;min-height:46px}
+.btn.alt{background:#fff;color:var(--deep);border:1.5px solid var(--deep)}
+.btn.ghost{background:#eef1f5;color:var(--slate)}
+.btn.bad{background:var(--bad)}
+.btn.okb{background:var(--ok)}
+.btn.yelb{background:#c79a00}
+.btn.sm{padding:7px 12px;min-height:38px;font-size:14.5px;border-radius:10px}
+.btn[disabled]{opacity:.5;pointer-events:none}
+.acts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.acts .btn{flex:1 1 180px}
+.small-acts{margin-top:8px}
+.small-acts .btn{flex:0 1 auto}
+.field{display:block;margin:0 0 14px}
+.field>span,.lbl{display:block;font-weight:600;font-size:14px;color:var(--slate);margin-bottom:6px}
+.inp{width:100%;border:1px solid #cfccc4;background:#fff;border-radius:11px;padding:10px 12px;min-height:46px}
+textarea.inp{min-height:90px;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.two{grid-template-columns:1fr}}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chips button{border:1px solid #d5d2ca;background:#fff;border-radius:999px;padding:8px 13px;font-weight:600;color:var(--slate);min-height:40px}
+.chips button[aria-pressed=true]{background:var(--deep);border-color:var(--deep);color:#fff}
+.chk{display:flex;gap:10px;align-items:center;min-height:40px;font-weight:600;color:var(--slate)}
+.chk input{width:22px;height:22px;accent-color:var(--deep)}
+
+.teeth{display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:3px;max-width:640px}
+.teeth button{border:1px solid #d5d2ca;background:#fff;border-radius:7px;padding:0;height:36px;font-size:12.5px;font-weight:700;color:var(--slate);font-variant-numeric:tabular-nums}
+.teeth button[aria-pressed=true]{background:var(--deep);border-color:var(--deep);color:#fff}
+.teeth button.mid{margin-left:5px}
+.teeth .sep{grid-column:1/-1;height:1px;background:var(--line);margin:3px 0}
+.teeth.ro button{cursor:default;height:26px;font-size:11px}
+.teeth.ro button[aria-pressed=false]{color:#c4c1b9;border-color:#ece9e2}
+@media(max-width:420px){.teeth button{height:32px;font-size:11px}}
+
+.kv{display:grid;grid-template-columns:max-content 1fr;gap:6px 14px;font-size:15px}
+.kv dt{color:var(--mut)}
+.kv dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+.ohead{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.ohead h2{flex:1;margin:0}
+.back{border:0;background:none;color:var(--deep);font-weight:600;padding:6px 0;margin-bottom:4px}
+.steps{display:flex;gap:4px;margin:10px 0 6px}
+.steps i{flex:1;height:6px;border-radius:4px;background:#e4e1da}
+.steps i.on{background:var(--deep)}
+.steps i.cur{background:var(--blue)}
+.stepl{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);gap:4px}
+.grid2{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:1000px){.grid2{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);align-items:start}}
+
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{padding:8px 9px;text-align:right;white-space:nowrap;border-top:1px solid var(--line)}
+th{color:var(--slate);font-size:12.5px;border-top:0;background:#f5f3ef}
+th:first-child,td:first-child{text-align:left;white-space:normal}
+td.neg{color:var(--bad);font-weight:700}
+tr.click{cursor:pointer}
+tr.click:hover td{background:#f4f8fd}
+
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.gal a,.gal .fx{display:block;aspect-ratio:1;border-radius:10px;overflow:hidden;background:#eef1f5;border:1px solid var(--line);position:relative;text-decoration:none;color:var(--slate)}
+.gal img{width:100%;height:100%;object-fit:cover;display:block}
+.gal .fx{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px;font-size:11.5px;text-align:center;overflow-wrap:anywhere;font-weight:600}
+.gal .fx b{font-size:15px;color:var(--deep)}
+.gal .del{opacity:.5;font-style:italic}
+
+.chat{display:flex;flex-direction:column;gap:8px;max-height:none}
+.msg{max-width:88%;background:#f1efea;border-radius:14px;padding:8px 12px;align-self:flex-start}
+.msg.me{background:var(--tint);align-self:flex-end}
+.msg.lab{background:#f3eefb}
+.msg .who{font-size:12.5px;font-weight:700;color:var(--slate);display:flex;gap:8px;justify-content:space-between}
+.msg .who span{font-weight:500;color:var(--mut)}
+.msg .tx{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:2px}
+.msg .gal{margin-top:6px;grid-template-columns:repeat(auto-fill,minmax(76px,1fr))}
+.ev{align-self:center;max-width:94%;font-size:13px;color:var(--mut);background:none;border:1px dashed #d8d4cb;border-radius:12px;padding:6px 11px;white-space:pre-wrap}
+.ev b{color:var(--slate)}
+.composer{background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px;margin-top:10px;box-shadow:0 6px 20px rgba(0,0,0,.06)}
+.composer textarea{border:0;width:100%;min-height:44px;max-height:180px;resize:none;padding:6px 6px;outline:0}
+.composer .rowx{display:flex;gap:6px;align-items:center}
+.ibtn{border:1px solid var(--line);background:#fff;border-radius:10px;min-width:44px;height:42px;display:inline-flex;align-items:center;justify-content:center;color:var(--slate);padding:0 10px;gap:6px;font-weight:600;font-size:14px}
+.ibtn svg{width:20px;height:20px}
+.pend{display:flex;flex-wrap:wrap;gap:6px;margin:4px 2px 6px}
+.pend span{background:#eef1f5;border-radius:8px;padding:3px 8px;font-size:13px;display:inline-flex;gap:6px;align-items:center}
+.pend button{border:0;background:none;color:var(--bad);font-weight:700;padding:0 2px}
+.prog{height:4px;background:#e4e1da;border-radius:3px;overflow:hidden;margin:4px 2px}
+.prog i{display:block;height:100%;background:var(--deep);width:0}
+
+.ov{position:fixed;inset:0;background:rgba(30,38,50,.5);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:#fff;width:100%;max-width:600px;max-height:92vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:20px 18px calc(22px + env(safe-area-inset-bottom));position:relative}
+@media(min-width:700px){.ov{align-items:center}.sheet{border-radius:20px}}
+.sheet h3{margin:0 0 12px;font-size:19px;padding-right:40px}
+.sheet .x{position:absolute;top:10px;right:10px;width:40px;height:40px;border:0;border-radius:50%;background:#eef1f5;font-size:24px;line-height:1;color:var(--slate)}
+.itm{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.itm:first-child{border-top:0}
+.itm .grow{flex:1;min-width:0;font-weight:600;font-size:15px;overflow-wrap:anywhere}
+.itm .grow small{display:block;font-weight:500;color:var(--mut)}
+.gh{font-weight:700;color:var(--slate);font-size:13.5px;margin:12px 0 2px;text-transform:uppercase;letter-spacing:.04em}
+.stp{display:flex;align-items:center;border:1px solid #d5d2ca;border-radius:999px;flex:none;background:#fff}
+.stp button{width:40px;height:40px;border:0;background:none;font-size:22px;line-height:1;color:var(--deep)}
+.stp span{min-width:24px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.stp.on{background:var(--deep);border-color:var(--deep)}
+.stp.on button,.stp.on span{color:#fff}
+.pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:6px 0 12px}
+.pick button{border:1px solid var(--line);background:#fff;border-radius:12px;padding:14px 10px;font-weight:600;min-height:52px;overflow-wrap:anywhere}
+.dots{display:flex;gap:14px;justify-content:center;margin:10px 0 16px}
+.dots i{width:16px;height:16px;border-radius:50%;border:2px solid var(--deep);display:block}
+.dots i.on{background:var(--deep)}
+.dots.err i{border-color:var(--bad);background:var(--badbg)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:300px;margin:0 auto}
+.pad button{border:1px solid var(--line);background:#fff;border-radius:16px;height:60px;font-size:24px;font-weight:600}
+.pad .e{visibility:hidden}
+.shake{animation:shake .35s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.pin-show{font-size:44px;letter-spacing:.3em;text-align:center;font-weight:700;color:var(--deep);background:var(--tint);border-radius:14px;padding:12px 0 12px .3em;margin:8px 0}
+#toast{position:fixed;left:0;right:0;bottom:calc(90px + env(safe-area-inset-bottom));z-index:60;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 16px}
+.toast{pointer-events:auto;background:#2a3038;color:#fff;border-radius:12px;padding:11px 14px;box-shadow:0 8px 22px rgba(0,0,0,.25);max-width:520px}
+.toast.bad{background:var(--bad)}
+.combo{position:relative}
+.sugg{position:absolute;left:0;right:0;top:100%;z-index:70;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 26px rgba(0,0,0,.16);max-height:270px;overflow-y:auto;margin-top:4px}
+.sugg button{display:block;width:100%;text-align:left;border:0;background:none;padding:11px 14px;border-top:1px solid var(--line);min-height:46px}
+.sugg button:first-child{border-top:0}
+.sugg small{color:var(--mut)}
+.loading{padding:30px;text-align:center;color:var(--mut)}
+.meter{height:14px;border-radius:8px;background:#e9e7e1;overflow:hidden;margin:8px 0}
+.meter i{display:block;height:100%;background:var(--deep)}
+.meter.w i{background:#e08a2c}.meter.b i{background:var(--bad)}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+.stats div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px}
+.stats b{display:block;font-size:26px;color:var(--deep);font-variant-numeric:tabular-nums}
+.stats span{font-size:13px;color:var(--mut)}
+.urow{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.urow:first-child{border-top:0}
+.urow .grow{flex:1;min-width:0}
+.foot{text-align:center;color:var(--mut);font-size:13px;margin:26px 0 8px}
+.lb{position:fixed;inset:0;background:rgba(10,14,20,.92);z-index:80;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;padding:14px}
+.lb img{max-width:100%;max-height:82vh;border-radius:8px}
+.lb .rowx{display:flex;gap:8px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <button class="brand" id="brand" data-go=""></button>
+  <div id="who"></div>
+</div></header>
+<main id="main"><div class="loading">Загрузка…</div></main>
+<button class="fab hide" id="fab" data-go="new">+ Новая работа</button>
+<nav class="bar hide" id="nav"><div></div></nav>
+<div id="toast" aria-live="polite"></div>
+<input type="file" id="fileIn" multiple class="hide">
+<noscript><p style="padding:20px">Для работы нужен JavaScript.</p></noscript>
+
+<script>
+'use strict';
+/* ============================ настройки ============================ */
+const SB = 'https://wcnpreukerxvhzdoajfn.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjbnByZXVrZXJ4dmh6ZG9hamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQzMTA5OTgsImV4cCI6MjEwOTg4Njk5OH0.0A9392W0pPUl9MJzK4klUHDXfoh5xQIntwRcFq4ByWw';
+const LOGO_SRC = 'https://static.tildacdn.com/tild3261-6534-4665-b833-386339663338/GAM_CLINIC.svg';
+const STORAGE_LIMIT = 1073741824;
+
+const WORK = ['Коронка', 'Коронка на имплантате', 'Мостовидный протез', 'Мост на имплантатах', 'Винир', 'Вкладка / накладка', 'Индивидуальный абатмент', 'Съёмный протез', 'Каппа / сплинт', 'Другое'];
+const SYSTEMS = ['Straumann NC', 'Straumann RC', 'Medentika Universal', 'Другая'];
+const METHODS = ['Оттиск', 'Скан'];
+const MATERIALS = ['PMMA', 'Диоксид циркония', 'E.max', 'Металлокерамика', 'Композит', 'Другое'];
+const SHADES = ['A1', 'A2', 'A3', 'A3.5', 'A4', 'B1', 'B2', 'B3', 'B4', 'C1', 'C2', 'C3', 'C4', 'D2', 'D3', 'D4', 'BL1', 'BL2', 'BL3', 'BL4'];
+const STATUS = { new: 'Ожидает отправки', at_lab: 'В лаборатории', lab_ready: 'Готово, едет в клинику', at_clinic: 'В клинике', delivered: 'Сдано пациенту', cancelled: 'Отменено' };
+const STCLS = { new: '', at_lab: 'blue', lab_ready: 'blue', at_clinic: 'ok', delivered: 'dark', cancelled: '' };
+const PURP = { make: 'Изготовление', next: 'Следующий этап', fix: 'Доработка', try1: 'Первичная примерка', try2: 'Финальная примерка', final: 'Сдача пациенту' };
+const ROLES = { super: 'Суперадмин', admin: 'Администратор', doctor: 'Врач', assistant: 'Ассистент', lab: 'Лаборатория' };
+const UP = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
+const LO = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
+
+/* ============================ утилиты ============================ */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const LS = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} },
+};
+const num = (id) => 'ЛБ-' + String(id).padStart(4, '0');
+const mskDate = (d = new Date()) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Moscow' }).format(d);
+const WD = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
+function dmy(s, wd) { if (!s) return '—'; const [y, m, d] = s.slice(0, 10).split('-'); const w = new Date(+y, m - 1, +d).getDay(); return `${d}.${m}` + (wd ? ` (${WD[w]})` : `.${y}`); }
+const when = (iso) => new Date(iso).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+const mb = (b) => (b / 1048576).toLocaleString('ru-RU', { maximumFractionDigits: 1 }) + ' МБ';
+function warnDate(due) { const [y, m, d] = due.split('-').map(Number); const x = new Date(y, m - 1, d); let n = 2; while (n > 0) { x.setDate(x.getDate() - 1); if (x.getDay() !== 0 && x.getDay() !== 6) n--; } return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`; }
+const teethTxt = (t) => (t && t.length ? [...t].sort((a, b) => a - b).join(', ') : '');
+const isImg = (m) => /^image\//.test(m || '');
+const ICON = {
+  list: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="7" height="16" rx="2"/><rect x="14" y="4" width="7" height="10" rx="2"/></svg>',
+  box: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg>',
+  chart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  clip: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 11l-8.5 8.5a5 5 0 0 1-7-7L14 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 7"/></svg>',
+  cam: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 8h4l2-3h6l2 3h4v11H3z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+  send: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 12l16-8-6 16-2-6-8-2z"/></svg>',
+};
+
+/* ============================ состояние ============================ */
+const S = {
+  tok: LS.get('gamlab_tok'), me: LS.get('gamlab_me'), boot: null, list: [], loaded: false,
+  q: '', tab: LS.get('gamlab_tab') || 'attn', mine: LS.get('gamlab_mine'), order: null, oid: null,
+  urls: {}, draft: {}, pend: [], live: false, stab: 'users', statsRange: 6, stats: null, users: null, storage: null,
+};
+const role = () => (S.me ? S.me.role : null);
+const isClinic = () => role() && role() !== 'lab';
+const isLab = () => role() === 'lab';
+const canStats = () => role() === 'super' || role() === 'admin';
+
+/* ============================ сеть ============================ */
+async function rpc(fn, args) {
+  const r = await fetch(SB + '/rest/v1/rpc/' + fn, { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}) });
+  if (!r.ok) {
+    let j = null; try { j = await r.json(); } catch (e) {}
+    const err = new Error((j && (j.message || j.msg)) || r.statusText); err.status = r.status; throw err;
+  }
+  return r.status === 204 ? null : r.json();
+}
+const call = (fn, args) => rpc(fn, Object.assign({ p_token: S.tok }, args || {}));
+async function fnFiles(body) {
+  const r = await fetch(SB + '/functions/v1/lab-files', { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ token: S.tok }, body)) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || r.statusText);
+  return j;
+}
+const ERR = {
+  AUTH: 'Нужно войти заново', FORBIDDEN: 'Нет доступа', NOTFOUND: 'Работа не найдена', BADSTATE: 'Статус работы уже изменился — обновите страницу',
+  EMPTY: 'Заполните обязательные поля', NOTE: 'Опишите, что нужно исправить', SHORTPASS: 'Пароль — минимум 6 символов', CLOSED: 'Работа закрыта',
+  SELF: 'Нельзя изменить свою роль или отключить себя', TOOBIG: 'Файл больше 50 МБ', NOFILE: 'Файл не загрузился, попробуйте ещё раз',
+  LOGIN_TAKEN: 'Такой логин уже занят', EXISTS: 'Суперадмин уже создан', BADLOGIN: 'Неверный логин или пароль', LOCKED: 'Слишком много попыток. Подождите 10 минут',
+};
+function errText(e) {
+  const m = String(e && e.message || e);
+  if (ERR[m]) return ERR[m];
+  if (e instanceof TypeError || /fetch|network|load failed/i.test(m)) return 'Нет связи с сервером. Проверьте интернет';
+  return m;
+}
+async function guard(fn) {
+  try { return await fn(); } catch (e) {
+    if (String(e.message) === 'AUTH') { logout(true); }
+    toast(errText(e), true);
+    return undefined;
+  }
+}
+function toast(msg, bad, ms = bad ? 5000 : 2600) {
+  const t = document.createElement('div'); t.className = 'toast' + (bad ? ' bad' : ''); t.textContent = msg;
+  $('#toast').appendChild(t); setTimeout(() => t.remove(), ms);
+}
+
+/* ============================ маршруты ============================ */
+const route = () => (location.hash || '#/').slice(2).split('/');
+function go(path) { if (('#/' + path) === location.hash) render(); else location.hash = '#/' + path; }
+window.addEventListener('hashchange', () => { closeSheet(); render(); window.scrollTo(0, 0); });
+
+/* ============================ оболочка ============================ */
+function renderBrand() {
+  $('#brand').innerHTML = `<img src="${esc(LOGO_SRC)}" alt="GAM CLINIC" onerror="this.remove();document.getElementById('bfb').classList.remove('hide')"><span class="bt"><b id="bfb" class="hide">GAM CLINIC</b><small>Лаборатория</small></span>`;
+}
+function renderWho() {
+  $('#who').innerHTML = S.me ? `<button class="chip-user" data-act="account"><i class="live ${S.live ? 'on' : ''}" title="${S.live ? 'Онлайн-обновление включено' : 'Обновление раз в минуту'}"></i>${esc(S.me.name)}</button>` : '';
+}
+function renderNav() {
+  const nav = $('#nav');
+  if (!S.me) { nav.classList.add('hide'); $('#fab').classList.add('hide'); return; }
+  const r = route()[0] || '';
+  const awayN = S.list.filter((o) => flags(o).short).length;
+  const items = [['', 'Работы', ICON.list, 0], ['away', 'Предметы', ICON.box, awayN]];
+  if (canStats()) items.push(['stats', 'Статистика', ICON.chart, 0]);
+  if (role() === 'super') items.push(['settings', 'Настройки', ICON.gear, 0]);
+  nav.firstElementChild.innerHTML = items.map(([k, t, ic, n]) => `<button data-go="${k}" ${(r === k || (k === '' && (r === 'o' || r === 'new' || r === 'edit'))) ? 'aria-current="page"' : ''}>${ic}${t}${n ? `<span class="dot">${n}</span>` : ''}</button>`).join('');
+  nav.classList.remove('hide');
+  $('#fab').classList.toggle('hide', !(isClinic() && (r === '')));
+}
+const pane = (h) => { $('#main').innerHTML = h; };
+
+/* ============================ флаги работы ============================ */
+function flags(o) {
+  const today = mskDate();
+  const out = { overdue: false, risk: false, short: false, delayed: !!o.delayed };
+  const due = o.due || o.due_date;
+  if (due && ['new', 'at_lab', 'lab_ready'].includes(o.status)) {
+    if (today > due) out.overdue = true; else if (today >= warnDate(due)) out.risk = true;
+  }
+  out.short = (o.away > 0) && ['at_clinic', 'delivered', 'cancelled'].includes(o.status);
+  out.attn = out.overdue || out.risk || out.short || out.delayed;
+  return out;
+}
+function dueTag(o) {
+  const due = o.due || o.due_date; if (!due) return '';
+  const f = flags(o);
+  const cls = f.overdue ? 'bad' : f.risk ? 'bad' : o.status === 'at_clinic' ? 'ok' : 'blue';
+  return `<span class="tag ${cls}">${f.overdue ? 'Просрочено · ' : ''}Визит ${dmy(due, true)}</span>`;
+}
+
+/* ============================ доска ============================ */
+const COLS = [
+  { k: 'attn', t: 'Требуют внимания', f: (o) => flags(o).attn && o.status !== 'cancelled' },
+  { k: 'new', t: 'Ожидают отправки', f: (o) => o.status === 'new' },
+  { k: 'lab', t: 'В лаборатории', f: (o) => o.status === 'at_lab' || o.status === 'lab_ready' },
+  { k: 'clinic', t: 'В клинике', f: (o) => o.status === 'at_clinic' },
+  { k: 'done', t: 'Сданы', f: (o) => o.status === 'delivered' || o.status === 'cancelled' },
+];
+function card(o) {
+  const f = flags(o);
+  const tags = [];
+  tags.push(`<span class="tag ${STCLS[o.status] || ''}">${STATUS[o.status]}</span>`);
+  if (o.purpose && ['at_lab', 'lab_ready', 'at_clinic'].includes(o.status)) tags.push(`<span class="tag">${PURP[o.purpose] || ''}</span>`);
+  if (f.delayed) tags.push('<span class="tag yel">Задерживается</span>');
+  if (f.short) tags.push(`<span class="tag warn">Не вернулось: ${o.away}</span>`);
+  if (o.remakes) tags.push(`<span class="tag">Доработок: ${o.remakes}</span>`);
+  if (o.unread && !['delivered', 'cancelled'].includes(o.status)) tags.push(`<span class="tag dark">💬 ${o.unread}</span>`);
+  const cls = f.overdue || f.risk ? 'r' : f.short ? 'o' : f.delayed ? 'y' : '';
+  return `<button class="oc ${cls}" data-go="o/${o.id}">
+    <div class="l1"><span>${num(o.id)}${o.doctor ? ' · ' + esc(o.doctor) : ''}</span>${dueTag(o)}</div>
+    <div class="fio">${esc(o.fio)}</div>
+    <div class="wk">${esc(o.work_type)}${o.teeth && o.teeth.length ? ' · ' + teethTxt(o.teeth) : ''}${o.implant_system ? ' · ' + esc(o.implant_system) : ''}</div>
+    <div class="meta">${tags.join('')}</div></button>`;
+}
+function filtered() {
+  const q = S.q.trim().toLowerCase();
+  return S.list.filter((o) => (!S.mine || o.doctor_id === S.me.id) && (!q || o.fio.toLowerCase().includes(q) || num(o.id).toLowerCase().includes(q) || String(o.id) === q.replace(/\D/g, '')));
+}
+function renderBoard() {
+  const list = filtered();
+  const groups = COLS.map((c) => ({ ...c, items: list.filter(c.f) }));
+  if (!groups.find((g) => g.k === S.tab)) S.tab = 'attn';
+  if (S.tab === 'attn' && !groups[0].items.length && S.loaded) S.tab = groups.find((g) => g.items.length && g.k !== 'attn')?.k || 'new';
+  let banner = '';
+  if (canStats() && S.boot && S.boot.storage != null && S.boot.storage / STORAGE_LIMIT >= 0.8)
+    banner = `<div class="banner warn"><span>Хранилище файлов заполнено на ${Math.round(S.boot.storage / STORAGE_LIMIT * 100)}%.</span>${role() === 'super' ? '<button class="btn sm" data-go="settings/storage">Освободить место</button>' : ''}</div>`;
+  const showMine = role() === 'doctor' || role() === 'super';
+  pane(`${banner}
+    <div class="toolbar"><input class="search" id="q" type="search" placeholder="Поиск: фамилия или номер работы" value="${esc(S.q)}" autocomplete="off">
+      ${showMine ? `<button class="tgl" data-act="mine" aria-pressed="${!!S.mine}">Мои пациенты</button>` : ''}</div>
+    <div class="tabs mob" role="tablist">${groups.map((g) => `<button class="tab ${g.k === 'attn' && g.items.length ? 'alert' : ''}" role="tab" data-tab="${g.k}" aria-selected="${S.tab === g.k}">${g.k === 'attn' ? 'Внимание' : g.t}<small>${g.items.length}</small></button>`).join('')}</div>
+    <div class="cols">${groups.map((g) => `<section class="col ${g.k === 'attn' ? 'attn' : ''} ${S.tab === g.k ? 'on' : ''} ${g.items.length ? '' : 'empty-col'}">
+      <h4><span>${g.t}</span><span>${g.items.length}</span></h4>
+      ${g.items.length ? `<div class="cards">${g.items.map(card).join('')}</div>` : `<div class="empty">${S.loaded ? (S.q ? 'Ничего не найдено' : 'Пусто') : 'Загрузка…'}</div>`}
+      ${g.k === 'done' ? '<div class="empty small">Показаны работы за последние 45 дней. Старые — через поиск.</div>' : ''}</section>`).join('')}</div>`);
+  const qi = $('#q');
+  qi.addEventListener('input', () => { S.q = qi.value; clearTimeout(qi._t); qi._t = setTimeout(async () => { if (S.q.trim().length >= 2) await loadList(); const pos = qi.selectionStart; renderBoard(); const n = $('#q'); n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) {} }, 250); });
+}
+async function loadList() {
+  try { S.list = await call('lab_list', { p_q: S.q.trim().length >= 2 ? S.q.trim() : null }); S.loaded = true; }
+  catch (e) { if (String(e.message) === 'AUTH') return logout(true); toast(errText(e), true); }
+}
+
+/* ============================ карточка работы ============================ */
+function teethChart(sel, ro) {
+  const s = new Set(sel || []);
+  const b = (n, i) => `<button type="button" data-tooth="${n}" aria-pressed="${s.has(n)}" class="${i === 8 ? 'mid' : ''}" ${ro ? 'tabindex="-1"' : ''}>${n}</button>`;
+  return `<div class="teeth ${ro ? 'ro' : ''}" ${ro ? '' : 'id="teeth"'}>${UP.map(b).join('')}<i class="sep"></i>${LO.map(b).join('')}</div>`;
+}
+function stageIdx(o) {
+  if (o.status === 'delivered') return 4;
+  const p = o.purpose;
+  if (o.status === 'new') return 0;
+  if (p === 'try1') return o.status === 'at_clinic' ? 1 : 1;
+  if (p === 'try2') return 2;
+  if (p === 'final') return 3;
+  return 0;
+}
+function fileTile(f, big) {
+  if (f.deleted) return `<span class="fx del" title="${esc(f.name)}">удалён<br>${esc(f.name)}</span>`;
+  const u = S.urls[f.path];
+  if (isImg(f.mime) && u) return `<a href="#" data-img="${esc(f.path)}" title="${esc(f.name)}"><img src="${esc(u)}" loading="lazy" alt=""></a>`;
+  const ext = (f.name.match(/\.([a-z0-9]{1,6})$/i) || [, 'файл'])[1].toUpperCase();
+  return u ? `<a class="fx" href="${esc(u)}&download=${encodeURIComponent(f.name)}" target="_blank" rel="noopener"><b>${esc(ext)}</b>${esc(f.name)}<br>${mb(f.size)}</a>`
+           : `<span class="fx"><b>${esc(ext)}</b>${esc(f.name)}</span>`;
+}
+async function loadUrls(files) {
+  const need = files.filter((f) => !f.deleted && !S.urls[f.path]).map((f) => f.path);
+  if (!need.length) return;
+  try { const r = await fnFiles({ action: 'urls', paths: need }); Object.assign(S.urls, r.urls || {}); } catch (e) {}
+}
+async function loadOrder(id) {
+  try {
+    const d = await call('lab_order', { p_id: id });
+    S.order = d; S.oid = id;
+    const files = d.msgs.flatMap((m) => m.files);
+    await loadUrls(files);
+    const l = S.list.find((o) => o.id === id); if (l) l.unread = 0;
+    return d;
+  } catch (e) { if (String(e.message) === 'AUTH') { logout(true); return null; } toast(errText(e), true); return null; }
+}
+function actionsFor(o, away) {
+  const a = [];
+  const closed = ['delivered', 'cancelled'].includes(o.status);
+  if (isClinic()) {
+    if (o.status === 'new') a.push(['send', 'Отправить в лабораторию', '']);
+    if (o.status === 'at_lab' || o.status === 'lab_ready') a.push(['receive', 'Работа получена в клинике', 'okb']);
+    if (o.status === 'at_clinic') { a.push(['deliver', 'Сдано пациенту', 'okb']); a.push(['send', 'Отправить в лабораторию', 'alt']); }
+    if (!closed) a.push(['edit', 'Изменить', 'sm ghost']);
+    a.push(['more', '+ Ещё работа пациенту', 'sm ghost']);
+    if (!closed && ['super', 'admin', 'doctor'].includes(role())) a.push(['cancel', 'Отменить работу', 'sm ghost']);
+  } else {
+    if (o.status === 'at_lab') { a.push(['ready', 'Готово — отправить в клинику', 'okb']); a.push([o.delayed ? 'undelay' : 'delay', o.delayed ? 'Снять задержку' : 'Задерживается', o.delayed ? 'ghost' : 'yelb']); }
+  }
+  return a;
+}
+function renderOrder() {
+  const d = S.order; if (!d) return pane('<div class="loading">Загрузка…</div>');
+  const o = d.order; const f = flags({ ...o, due: o.due_date, away: outstanding(d).reduce((s, i) => s + i.left, 0) });
+  const away = outstanding(d).reduce((s, i) => s + i.left, 0);
+  const si = stageIdx(o);
+  const files = d.msgs.flatMap((m) => m.files);
+  const live = files.filter((x) => !x.deleted);
+  const kv = [
+    ['Врач', esc(o.doctor || '—')], ...(S.boot && S.boot.labs.length > 1 ? [['Лаборатория', esc(o.lab)]] : []),
+    ['Вид работы', esc(o.work_type)],
+    ...(o.implant ? [['Имплантаты', esc(o.implant_system || '—')]] : []),
+    ['Метод', esc(o.method || '—')],
+    ['Тип', o.temp ? 'Временная' : 'Постоянная'], ['Материал', esc(o.material || '—')],
+    ['Цвет', esc([o.shade, o.shade_note].filter(Boolean).join(' · ') || '—')],
+    ['Визит пациента', o.due_date ? dmy(o.due_date) + ' (' + dmy(o.due_date, true).split('(')[1] : '—'],
+    ['Оформил(а)', esc(o.author || '—') + ' · ' + dmy(o.created_at.slice(0, 10))],
+  ];
+  const sib = d.siblings.length > 1 ? `<div class="tabs">${d.siblings.map((s) => `<button class="tab" data-go="o/${s.id}" aria-selected="${s.id === o.id}">${num(s.id)} · ${esc(s.work_type)}${s.teeth.length ? ' ' + teethTxt(s.teeth) : ''}<small>${STATUS[s.status]}</small></button>`).join('')}</div>` : '';
+  const acts = actionsFor(o, away);
+  const items = outstanding(d);
+  const draft = S.draft[o.id] || '';
+  pane(`<button class="back" data-go="">← Все работы</button>
+  <div class="ohead"><h2>${esc(o.fio)}</h2><span class="tag ${STCLS[o.status]}">${num(o.id)}</span></div>
+  ${sib}
+  <div class="grid2"><div>
+    <div class="card">
+      <div class="meta" style="margin-top:0"><span class="tag ${STCLS[o.status]}">${STATUS[o.status]}</span>${o.purpose && !['new', 'delivered', 'cancelled'].includes(o.status) ? `<span class="tag">${PURP[o.purpose]}</span>` : ''}
+        ${dueTag({ ...o, due: o.due_date })}${o.remakes ? `<span class="tag">Доработок: ${o.remakes}</span>` : ''}${o.was_late ? '<span class="tag warn">Была задержка</span>' : ''}</div>
+      ${o.status !== 'cancelled' ? `<div class="steps">${[0, 1, 2, 3, 4].map((i) => `<i class="${i < si ? 'on' : i === si ? 'cur' : ''}"></i>`).join('')}</div>
+      <div class="stepl"><span>Оформлено</span><span>Примерка</span><span>Фин. примерка</span><span>Готово</span><span>Сдано</span></div>` : ''}
+      ${o.delayed ? `<div class="banner warn" style="margin:12px 0 0"><span><b>Лаборатория: работа задерживается.</b>${o.delay_note ? '<br>' + esc(o.delay_note) : ''}</span></div>` : ''}
+      ${f.short ? `<div class="banner warn" style="margin:12px 0 0"><span>Не все предметы вернулись из лаборатории: ${away} шт.</span></div>` : ''}
+      ${f.overdue ? '<div class="banner bad" style="margin:12px 0 0"><span>Дата визита прошла, а работы нет в клинике.</span></div>' : f.risk ? '<div class="banner bad" style="margin:12px 0 0"><span>До визита меньше 2 рабочих дней, работа ещё не в клинике.</span></div>' : ''}
+      ${acts.filter((x) => !x[2].includes('sm')).length ? `<div class="acts">${acts.filter((x) => !x[2].includes('sm')).map(([k, t, c]) => `<button class="btn ${c}" data-act="o-${k}">${t}</button>`).join('')}</div>` : ''}
+      ${acts.filter((x) => x[2].includes('sm')).length ? `<div class="acts small-acts">${acts.filter((x) => x[2].includes('sm')).map(([k, t, c]) => `<button class="btn ${c}" data-act="o-${k}">${t}</button>`).join('')}</div>` : ''}
+    </div>
+    <div class="card"><h3>Параметры работы</h3>
+      <dl class="kv">${kv.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
+      ${o.teeth.length ? `<div class="lbl" style="margin-top:12px">Зубы: ${teethTxt(o.teeth)}</div>${teethChart(o.teeth, true)}` : ''}
+      ${o.notes ? `<div class="lbl" style="margin-top:12px">Комментарий</div><div style="white-space:pre-wrap">${esc(o.notes)}</div>` : ''}
+    </div>
+    <div class="card"><h3><span class="grow">Предметы</span>${isClinic() && away > 0 ? '<button class="btn sm alt" data-act="o-back">Принять</button>' : ''}</h3>
+      ${d.items.length ? `<div class="tw"><table><tr><th>Предмет</th><th>Отпр.</th><th>Вернулось</th><th>В лаб.</th></tr>
+        ${d.items.map((i) => { const left = i.returnable ? i.sent - i.back - i.woff : 0; return `<tr><td>${esc(i.name)}${i.returnable ? '' : ' <span class="mut small">(не возвращается)</span>'}${i.woff ? ` <span class="tag warn">списано ${i.woff}</span>` : ''}</td><td>${i.sent || 0}</td><td>${i.returnable ? i.back : '—'}</td><td class="${left > 0 && !['at_lab'].includes(o.status) ? 'neg' : ''}">${i.returnable ? left : '—'}</td></tr>`; }).join('')}</table></div>`
+        : '<div class="mut small">Предметы ещё не отправлялись.</div>'}
+    </div>
+    <div class="card"><h3>Файлы <span class="mut small">${live.length}</span></h3>
+      ${files.length ? `<div class="gal">${files.map((x) => fileTile(x)).join('')}</div>` : '<div class="mut small">Фото, сканы и файлы добавляются через переписку ниже.</div>'}
+    </div>
+  </div><div>
+    <div class="card"><h3>Переписка и история</h3>
+      <div class="chat" id="chat">${d.msgs.map(msgHtml).join('')}</div>
+      ${o.status !== 'cancelled' ? `<div class="composer">
+        ${S.pend.length ? `<div class="pend">${S.pend.map((p, i) => `<span>${esc(p.file.name)} · ${mb(p.file.size)}${p.busy ? '' : `<button data-act="unpend" data-i="${i}" aria-label="Убрать">×</button>`}</span>`).join('')}</div><div class="prog"><i id="prog"></i></div>` : ''}
+        <textarea id="msg" placeholder="${isLab() ? 'Сообщение для клиники…' : 'Сообщение для лаборатории…'}" rows="2">${esc(draft)}</textarea>
+        <div class="rowx"><button class="ibtn" data-act="attach-cam" title="Сфотографировать">${ICON.cam}</button><button class="ibtn" data-act="attach" title="Прикрепить файл">${ICON.clip}<span>Файл</span></button>
+        <span class="grow" style="flex:1"></span><button class="btn sm" data-act="send-msg">${ICON.send.replace('<svg', '<svg width="18" height="18" style="vertical-align:-3px;margin-right:4px"')}Отправить</button></div>
+      </div>` : ''}
+    </div>
+  </div></div>`);
+  const m = $('#msg'); if (m) m.addEventListener('input', () => { S.draft[o.id] = m.value; });
+}
+function msgHtml(m) {
+  if (m.kind === 'event') {
+    const [first, ...rest] = (m.text || '').split('\n');
+    return `<div class="ev"><b>${esc(first)}</b>${rest.length ? '\n' + esc(rest.join('\n')) : ''}\n<span class="small">${esc(m.name || '')} · ${when(m.at)}</span></div>`;
+  }
+  const me = m.user_id === S.me.id;
+  return `<div class="msg ${me ? 'me' : m.role === 'lab' ? 'lab' : ''}"><div class="who">${esc(m.name || '')}${m.role ? ` <span>${ROLES[m.role]}</span>` : ''}<span>${when(m.at)}</span></div>
+    ${m.text ? `<div class="tx">${esc(m.text)}</div>` : ''}${m.files.length ? `<div class="gal">${m.files.map((x) => fileTile(x)).join('')}</div>` : ''}</div>`;
+}
+function outstanding(d) {
+  return d.items.filter((i) => i.returnable).map((i) => ({ ...i, left: i.sent - i.back - i.woff })).filter((i) => i.left > 0);
+}
+
+/* ============================ форма работы ============================ */
+let F = null;
+function blankForm() {
+  const me = S.me;
+  return { id: null, patient_id: null, fio: '', doctor_id: (me.role === 'doctor' || me.role === 'super') ? me.id : null, lab_id: S.boot.labs.find((l) => l.active)?.id || null,
+    work_type: '', teeth: [], implant: false, implant_system: '', method: '', temp: false, material: '', shade: '', shade_note: '', notes: '', due_date: '' };
+}
+function renderForm() {
+  const labs = S.boot.labs.filter((l) => l.active || l.id === F.lab_id);
+  const chips = (arr, key) => `<div class="chips" data-chips="${key}">${arr.map((v) => `<button type="button" data-v="${esc(v)}" aria-pressed="${F[key] === v}">${esc(v)}</button>`).join('')}</div>`;
+  pane(`<div class="narrow"><button class="back" data-act="form-cancel">← Назад</button>
+  <h2>${F.id ? 'Изменить работу ' + num(F.id) : 'Новая работа'}</h2>
+  <div class="card">
+    <div class="field combo"><span>Пациент (Фамилия Имя Отчество) *</span>
+      <input class="inp" id="f-fio" value="${esc(F.fio)}" autocomplete="off" placeholder="Иванов Иван Иванович" ${F.lockPatient ? 'readonly' : ''}>
+      <div id="f-sugg"></div>
+      <div class="small mut" id="f-pinfo">${F.patient_id ? '✓ Пациент уже есть в базе — работа добавится в его карточку' + (F.id ? '' : ' · <button type="button" class="linkbtn" style="border:0;background:none;color:var(--deep);text-decoration:underline;padding:0" data-act="f-newpat">это другой пациент</button>') : (F.fio.trim() ? 'Будет создан новый пациент' : '')}</div></div>
+    <div class="two">
+      <label class="field"><span>Врач</span><select class="inp" id="f-doc"><option value="">—</option>${S.boot.doctors.map((x) => `<option value="${x.id}" ${x.id === F.doctor_id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
+      ${labs.length > 1 ? `<label class="field"><span>Лаборатория</span><select class="inp" id="f-lab">${labs.map((l) => `<option value="${l.id}" ${l.id === F.lab_id ? 'selected' : ''}>${esc(l.name)}</option>`).join('')}</select></label>` : `<label class="field"><span>Дата следующего визита</span><input class="inp" type="date" id="f-due" value="${esc(F.due_date)}"></label>`}
+    </div>
+    ${labs.length > 1 ? `<label class="field"><span>Дата следующего визита</span><input class="inp" type="date" id="f-due" value="${esc(F.due_date)}"></label>` : ''}
+  </div>
+  <div class="card">
+    <div class="field"><span class="lbl">Вид работы *</span>${chips(WORK, 'work_type')}</div>
+    <div class="field"><span class="lbl">Зубы <span class="mut" id="f-tt">${teethTxt(F.teeth)}</span></span>${teethChart(F.teeth)}</div>
+    <label class="chk"><input type="checkbox" id="f-impl" ${F.implant ? 'checked' : ''}> На имплантатах</label>
+    <div class="field ${F.implant ? '' : 'hide'}" id="f-implbox" style="margin-top:8px"><span class="lbl">Система имплантатов</span>${chips(SYSTEMS, 'implant_system')}</div>
+    <div class="field"><span class="lbl">Метод</span>${chips(METHODS, 'method')}</div>
+  </div>
+  <div class="card">
+    <div class="field"><span class="lbl">Тип</span><div class="chips" data-chips="temp"><button type="button" data-v="0" aria-pressed="${!F.temp}">Постоянная</button><button type="button" data-v="1" aria-pressed="${F.temp}">Временная</button></div></div>
+    <div class="field"><span class="lbl">Материал</span>${chips(MATERIALS, 'material')}</div>
+    <div class="two">
+      <label class="field"><span>Цвет (VITA)</span><select class="inp" id="f-shade"><option value="">—</option>${SHADES.map((s) => `<option ${F.shade === s ? 'selected' : ''}>${s}</option>`).join('')}</select></label>
+      <label class="field"><span>Уточнение цвета</span><input class="inp" id="f-shn" value="${esc(F.shade_note)}" placeholder="напр. шейка A3, режущий край A2"></label>
+    </div>
+    <label class="field"><span>Комментарий для лаборатории</span><textarea class="inp" id="f-notes" rows="3">${esc(F.notes)}</textarea></label>
+  </div>
+  <div class="acts" style="margin-bottom:20px">${F.id ? '<button class="btn" data-act="form-save">Сохранить</button>' : '<button class="btn" data-act="form-save-send">Сохранить и отправить в лабораторию</button><button class="btn alt" data-act="form-save">Только сохранить</button>'}</div>
+  </div>`);
+  const fio = $('#f-fio');
+  fio.addEventListener('input', () => {
+    F.fio = fio.value; if (F.patient_id && !F.id) { F.patient_id = null; }
+    $('#f-pinfo').textContent = F.patient_id ? '' : (F.fio.trim() ? 'Будет создан новый пациент' : '');
+    clearTimeout(fio._t); if (F.id || fio.value.trim().length < 2) { $('#f-sugg').innerHTML = ''; return; }
+    fio._t = setTimeout(async () => {
+      try {
+        const r = await call('lab_patients_find', { p_q: fio.value.trim() });
+        $('#f-sugg').innerHTML = r.length ? `<div class="sugg">${r.map((p) => `<button type="button" data-act="f-pat" data-id="${p.id}" data-fio="${esc(p.fio)}">${esc(p.fio)} <small>· работ: ${p.orders}</small></button>`).join('')}</div>` : '';
+      } catch (e) {}
+    }, 250);
+  });
+  $('#f-impl').addEventListener('change', (e) => { F.implant = e.target.checked; $('#f-implbox').classList.toggle('hide', !F.implant); });
+}
+function readForm() {
+  F.fio = $('#f-fio').value; F.doctor_id = +$('#f-doc').value || null; if ($('#f-lab')) F.lab_id = +$('#f-lab').value;
+  F.due_date = $('#f-due').value; F.shade = $('#f-shade').value; F.shade_note = $('#f-shn').value; F.notes = $('#f-notes').value; F.implant = $('#f-impl').checked;
+}
+async function saveForm(thenSend) {
+  readForm();
+  if (!F.fio.trim()) { toast('Укажите ФИО пациента', true); $('#f-fio').focus(); return; }
+  if (F.fio.trim().split(/\s+/).length < 2) { toast('Укажите фамилию и имя (и отчество)', true); $('#f-fio').focus(); return; }
+  if (!F.work_type) { toast('Выберите вид работы', true); return; }
+  const p = { id: F.id, patient_id: F.patient_id, fio: F.id ? F.fio : (F.patient_id ? null : F.fio), doctor_id: F.doctor_id, lab_id: F.lab_id, work_type: F.work_type, teeth: F.teeth,
+    implant: F.implant, implant_system: F.implant ? F.implant_system : '', method: F.method, temp: F.temp, material: F.material, shade: F.shade, shade_note: F.shade_note, notes: F.notes, due_date: F.due_date };
+  const id = await guard(() => call('lab_save_order', { p }));
+  if (!id) return;
+  toast(F.id ? 'Сохранено' : 'Работа оформлена: ' + num(id));
+  F = null; loadList();
+  if (thenSend) S.afterOpen = 'send';
+  go('o/' + id);
+}
+
+/* ============================ шторки ============================ */
+function sheet(html, cls = '') {
+  closeSheet();
+  const ov = document.createElement('div'); ov.className = 'ov'; ov.id = 'ov';
+  ov.innerHTML = `<div class="sheet ${cls}" role="dialog" aria-modal="true"><button class="x" data-act="close" aria-label="Закрыть">×</button>${html}</div>`;
+  ov.addEventListener('click', (e) => { if (e.target === ov) closeSheet(); });
+  document.body.appendChild(ov); document.body.style.overflow = 'hidden';
+}
+function closeSheet() { const o = $('#ov'); if (o) o.remove(); document.body.style.overflow = ''; }
+
+let SEND = null;
+function openSend() {
+  const o = S.order.order;
+  const today = mskDate();
+  SEND = { purpose: o.status === 'new' ? 'make' : 'next', due: o.due_date && o.due_date >= today ? o.due_date : '', qty: {}, extra: [] };
+  renderSend();
+}
+function renderSend() {
+  const o = S.order.order;
+  const cat = S.boot.catalog.filter((c) => c.active);
+  const groups = [...new Set(cat.map((c) => c.grp))];
+  const sys = (o.implant_system || '').toLowerCase();
+  const order = groups.sort((a, b) => (sys.includes(b.toLowerCase()) - sys.includes(a.toLowerCase())));
+  const stp = (k, v) => `<div class="stp ${v ? 'on' : ''}"><button type="button" data-act="sq" data-k="${k}" data-d="-1" aria-label="Меньше">−</button><span>${v || 0}</span><button type="button" data-act="sq" data-k="${k}" data-d="1" aria-label="Больше">+</button></div>`;
+  const purposes = o.status === 'new' ? ['make'] : ['next', 'fix'];
+  const total = Object.values(SEND.qty).reduce((a, b) => a + b, 0) + SEND.extra.reduce((a, e) => a + e.qty, 0);
+  sheet(`<h3>Отправить в лабораторию · ${num(o.id)}</h3>
+    ${purposes.length > 1 ? `<div class="field"><span class="lbl">Цель</span><div class="chips">${purposes.map((p) => `<button type="button" data-act="sp" data-v="${p}" aria-pressed="${SEND.purpose === p}">${PURP[p]}</button>`).join('')}</div></div>` : ''}
+    <label class="field"><span>Дата следующего визита пациента *</span><input class="inp" type="date" id="s-due" value="${esc(SEND.due)}" min="${mskDate()}"></label>
+    <div class="lbl">Что отправляем <span class="mut">${total ? '· ' + total + ' шт' : ''}</span></div>
+    ${order.map((g) => `<div class="gh">${esc(g)}</div>${cat.filter((c) => c.grp === g).map((c) => `<div class="itm"><div class="grow">${esc(c.name)}${c.returnable ? '' : '<small>не возвращается</small>'}</div>${stp(c.id, SEND.qty[c.id])}</div>`).join('')}`).join('')}
+    <div class="gh">Другое</div>
+    ${SEND.extra.map((e, i) => `<div class="itm"><div class="grow">${esc(e.name)}</div>${stp('x' + i, e.qty)}</div>`).join('')}
+    <div class="rowx" style="display:flex;gap:8px;margin:6px 0 12px"><input class="inp" id="s-xn" placeholder="Название предмета" style="flex:1"><button class="btn sm alt" data-act="sx">Добавить</button></div>
+    <label class="field"><span>${SEND.purpose === 'fix' ? 'Что нужно исправить *' : 'Комментарий'}</span><textarea class="inp" id="s-note" rows="3">${esc(SEND.note || '')}</textarea></label>
+    <div class="small mut">Фото для лаборатории можно добавить в переписке после отправки.</div>
+    <div class="acts"><button class="btn" data-act="send-go">Отправить</button></div>`);
+  const sv = () => { SEND.due = $('#s-due').value; SEND.note = $('#s-note').value; };
+  $('#s-due').addEventListener('input', sv); $('#s-note').addEventListener('input', sv);
+}
+async function doSend() {
+  SEND.due = $('#s-due').value; SEND.note = $('#s-note').value;
+  if (!SEND.due) { toast('Укажите дату следующего визита', true); return; }
+  if (SEND.purpose === 'fix' && !SEND.note.trim()) { toast('Опишите, что нужно исправить', true); return; }
+  const items = Object.entries(SEND.qty).filter(([, q]) => q > 0).map(([id, q]) => ({ catalog_id: +id, qty: q })).concat(SEND.extra.filter((e) => e.qty > 0).map((e) => ({ name: e.name, qty: e.qty })));
+  const id = S.order.order.id;
+  const r = await guard(() => call('lab_send', { p_id: id, p_purpose: SEND.purpose, p_due: SEND.due, p_items: items, p_note: SEND.note || null }));
+  if (r === undefined) return;
+  closeSheet(); toast('Отмечено: отправлено в лабораторию'); await refreshOrder(id);
+}
+function openReceive() {
+  const o = S.order.order;
+  const def = ['try1', 'try2', 'final'].includes(o.purpose) ? o.purpose : 'try1';
+  sheet(`<h3>Работа получена · ${num(o.id)}</h3>
+    <div class="field"><span class="lbl">Для чего пришла работа</span><div class="chips" id="r-p">${['try1', 'try2', 'final'].map((p) => `<button type="button" data-v="${p}" aria-pressed="${p === def}">${PURP[p]}</button>`).join('')}</div></div>
+    ${o.status === 'at_lab' ? '<div class="small mut">Лаборатория ещё не отметила отправку — это нормально, можно принять сразу.</div>' : ''}
+    <div class="acts"><button class="btn okb" data-act="recv-go">Работа в клинике</button></div>`);
+}
+async function doReceive() {
+  const p = $('#r-p [aria-pressed=true]')?.dataset.v || 'try1';
+  const id = S.order.order.id;
+  const r = await guard(() => call('lab_receive', { p_id: id, p_purpose: p }));
+  if (r === undefined) return;
+  closeSheet(); toast('Работа отмечена как полученная'); await refreshOrder(id);
+  if (outstanding(S.order).length) openBack();
+}
+let BACK = null;
+function openBack() {
+  const it = outstanding(S.order);
+  BACK = { q: Object.fromEntries(it.map((i) => [i.name, i.left])), woff: false, note: '' };
+  renderBack();
+}
+function renderBack() {
+  const it = outstanding(S.order);
+  const rest = it.reduce((s, i) => s + (i.left - (BACK.q[i.name] || 0)), 0);
+  sheet(`<h3>Принять предметы · ${num(S.order.order.id)}</h3>
+    <div class="small mut" style="margin-bottom:6px">Проверьте, что вернулось из лаборатории. Отметьте количество по каждому предмету.</div>
+    ${it.map((i, n) => `<div class="itm"><div class="grow">${esc(i.name)}<small>в лаборатории: ${i.left}</small></div>
+      <div class="stp ${BACK.q[i.name] ? 'on' : ''}"><button type="button" data-act="bq" data-n="${n}" data-d="-1">−</button><span>${BACK.q[i.name] || 0}</span><button type="button" data-act="bq" data-n="${n}" data-d="1">+</button></div></div>`).join('')}
+    ${rest > 0 ? `<div class="banner warn" style="margin-top:12px"><span>Не вернулось: ${rest} шт. Они останутся в списке «Предметы в лаборатории».</span></div>
+      <label class="chk"><input type="checkbox" id="b-w" ${BACK.woff ? 'checked' : ''}> Списать недостающее (утеряно / осталось в лаборатории навсегда)</label>
+      <input class="inp ${BACK.woff ? '' : 'hide'}" id="b-n" placeholder="Причина списания" value="${esc(BACK.note)}">` : '<div class="banner info" style="margin-top:12px"><span>Всё на месте ✓</span></div>'}
+    <div class="acts"><button class="btn" data-act="back-go">Сохранить</button></div>`);
+  const w = $('#b-w'); if (w) w.addEventListener('change', () => { BACK.woff = w.checked; $('#b-n').classList.toggle('hide', !w.checked); });
+  const n = $('#b-n'); if (n) n.addEventListener('input', () => { BACK.note = n.value; });
+}
+async function doBack() {
+  const it = outstanding(S.order);
+  const items = [];
+  for (const i of it) {
+    const q = BACK.q[i.name] || 0;
+    if (q > 0) items.push({ name: i.name, catalog_id: i.catalog_id, qty: q, kind: 'back' });
+    if (BACK.woff && i.left - q > 0) items.push({ name: i.name, catalog_id: i.catalog_id, qty: i.left - q, kind: 'writeoff', note: BACK.note });
+  }
+  if (!items.length) { closeSheet(); return; }
+  const id = S.order.order.id;
+  const r = await guard(() => call('lab_items_back', { p_id: id, p_items: items }));
+  if (r === undefined) return;
+  closeSheet(); toast('Предметы приняты'); await refreshOrder(id);
+}
+function openReady() {
+  const o = S.order.order;
+  sheet(`<h3>Работа готова · ${num(o.id)}</h3>
+    <div class="field"><span class="lbl">Что отправляете в клинику</span><div class="chips" id="r-p">${['try1', 'try2', 'final'].map((p, i) => `<button type="button" data-v="${p}" aria-pressed="${i === 0}">${PURP[p]}</button>`).join('')}</div></div>
+    <label class="field"><span>Комментарий</span><textarea class="inp" id="r-note" rows="3"></textarea></label>
+    <div class="acts"><button class="btn okb" data-act="ready-go">Отправлено в клинику</button></div>`);
+}
+function openDelay() {
+  sheet(`<h3>Работа задерживается</h3>
+    <label class="field"><span>Причина и когда будет готово</span><textarea class="inp" id="d-note" rows="3" placeholder="напр. ждём заготовку, будет готово в четверг"></textarea></label>
+    <div class="acts"><button class="btn yelb" data-act="delay-go">Сообщить клинике</button></div>`);
+}
+
+/* ============================ файлы ============================ */
+async function shrink(f) {
+  if (!/^image\/(jpeg|png|webp)$/.test(f.type) || typeof createImageBitmap !== 'function') return f;
+  try {
+    const bmp = await createImageBitmap(f);
+    const s = Math.min(1, 2000 / Math.max(bmp.width, bmp.height));
+    if (s === 1 && f.size < 1.5e6) return f;
+    const c = document.createElement('canvas'); c.width = Math.round(bmp.width * s); c.height = Math.round(bmp.height * s);
+    c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    const b = await new Promise((r) => c.toBlob(r, 'image/jpeg', 0.82));
+    return b && b.size < f.size ? new File([b], f.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' }) : f;
+  } catch (e) { return f; }
+}
+function putFile(url, file, onp) {
+  return new Promise((res, rej) => {
+    const x = new XMLHttpRequest(); x.open('PUT', url);
+    x.setRequestHeader('x-upsert', 'false'); x.setRequestHeader('apikey', KEY);
+    x.upload.onprogress = (e) => { if (e.lengthComputable) onp(e.loaded / e.total); };
+    x.onload = () => (x.status < 300 ? res() : rej(new Error('Ошибка загрузки файла (' + x.status + ')')));
+    x.onerror = () => rej(new TypeError('network'));
+    const fd = new FormData(); fd.append('cacheControl', '3600'); fd.append('', file); x.send(fd);
+  });
+}
+async function sendMsg() {
+  const id = S.order.order.id;
+  const text = ($('#msg') ? $('#msg').value : '').trim();
+  if (!text && !S.pend.length) return;
+  const btn = $('[data-act=send-msg]'); if (btn) btn.disabled = true;
+  try {
+    const done = [];
+    const total = S.pend.reduce((s, p) => s + p.file.size, 0) || 1; let base = 0;
+    for (const p of S.pend) {
+      p.busy = true;
+      const up = await fnFiles({ action: 'upload', order_id: id, name: p.file.name, size: p.file.size });
+      await putFile(up.url, p.file, (fr) => { const g = $('#prog'); if (g) g.style.width = Math.round((base + fr * p.file.size) / total * 100) + '%'; });
+      base += p.file.size;
+      done.push({ path: up.path, name: p.file.name, mime: p.file.type || '' });
+    }
+    await call('lab_msg', { p_id: id, p_text: text, p_files: done });
+    S.pend = []; S.draft[id] = '';
+    await refreshOrder(id);
+    const ch = $('#chat'); if (ch) ch.lastElementChild?.scrollIntoView({ block: 'nearest' });
+  } catch (e) {
+    S.pend.forEach((p) => (p.busy = false));
+    toast(errText(e), true); if (btn) btn.disabled = false;
+  }
+}
+async function addFiles(list) {
+  for (const f0 of list) {
+    const f = await shrink(f0);
+    if (f.size > 50 * 1048576) { toast(`«${f.name}» больше 50 МБ`, true); continue; }
+    S.pend.push({ file: f });
+  }
+  const m = $('#msg'); if (m) S.draft[S.oid] = m.value;
+  renderOrder();
+}
+$('#fileIn').addEventListener('change', (e) => { const fl = [...e.target.files]; e.target.value = ''; if (fl.length) addFiles(fl); });
+
+/* ============================ предметы в лаборатории ============================ */
+async function renderAway() {
+  pane('<div class="loading">Загрузка…</div>');
+  const rows = await guard(() => call('lab_away')); if (!rows) return;
+  const by = {}; rows.forEach((r) => { (by[r.name] = by[r.name] || []).push(r); });
+  const names = Object.keys(by).sort();
+  const total = rows.reduce((s, r) => s + r.qty, 0);
+  const shortRows = rows.filter((r) => ['at_clinic', 'delivered', 'cancelled'].includes(r.status));
+  pane(`<div class="narrow"><h2>Предметы клиники в лаборатории</h2>
+    <div class="stats"><div><b>${total}</b><span>всего предметов в лаборатории</span></div><div><b style="color:${shortRows.length ? 'var(--bad)' : 'var(--deep)'}">${shortRows.reduce((s, r) => s + r.qty, 0)}</b><span>не вернулись, хотя работа уже в клинике</span></div></div>
+    ${names.length ? names.map((n) => `<div class="card"><h3><span class="grow">${esc(n)}</span><span class="tag blue">${by[n].reduce((s, r) => s + r.qty, 0)} шт</span></h3>
+      <div class="tw"><table>${by[n].map((r) => { const sh = ['at_clinic', 'delivered', 'cancelled'].includes(r.status); return `<tr class="click" data-go="o/${r.order_id}"><td>${num(r.order_id)} · ${esc(r.fio)}</td><td><span class="tag ${sh ? 'warn' : STCLS[r.status]}">${sh ? 'Не вернулось' : STATUS[r.status]}</span></td><td class="${sh ? 'neg' : ''}">${r.qty} шт</td></tr>`; }).join('')}</table></div></div>`).join('')
+      : '<div class="card empty">Все предметы на месте ✓</div>'}</div>`);
+}
+
+/* ============================ статистика ============================ */
+async function renderStats() {
+  if (!canStats()) return go('');
+  pane('<div class="loading">Загрузка…</div>');
+  const to = new Date(); const from = new Date(to.getFullYear(), to.getMonth() - (S.statsRange - 1), 1);
+  const fs = mskDate(from).slice(0, 8) + '01';
+  const d = await guard(() => call('lab_stats', { p_from: fs, p_to: mskDate(to) })); if (!d) return;
+  S.stats = d;
+  const t = d.months.reduce((a, m) => ({ total: a.total + m.total, delivered: a.delivered + m.delivered, remade: a.remade + m.remade, late: a.late + m.late }), { total: 0, delivered: 0, remade: 0, late: 0 });
+  const dl = d.rows.filter((r) => r.status === 'delivered' && r.closed_at);
+  const avg = dl.length ? (dl.reduce((s, r) => s + (new Date(r.closed_at) - new Date(r.created_at)) / 864e5, 0) / dl.length) : null;
+  const pct = (a, b) => (b ? Math.round(a / b * 100) + '%' : '—');
+  const MN = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+  const mname = (m) => MN[+m.slice(5) - 1] + ' ' + m.slice(0, 4);
+  pane(`<div class="narrow"><h2>Статистика</h2>
+    <div class="tabs">${[3, 6, 12].map((n) => `<button class="tab" data-act="srange" data-n="${n}" aria-selected="${S.statsRange === n}">${n} мес.</button>`).join('')}</div>
+    <div class="stats">
+      <div><b>${t.total}</b><span>работ оформлено</span></div>
+      <div><b>${t.delivered}</b><span>сдано пациентам</span></div>
+      <div><b>${avg == null ? '—' : avg.toLocaleString('ru-RU', { maximumFractionDigits: 1 })}</b><span>дней в среднем от оформления до сдачи</span></div>
+      <div><b>${pct(t.remade, t.total)}</b><span>работ с доработкой (${t.remade})</span></div>
+      <div><b>${t.late}</b><span>пришли позже даты визита</span></div>
+    </div>
+    <div class="card"><h3>По месяцам</h3><div class="tw"><table><tr><th>Месяц</th><th>Оформлено</th><th>Сдано</th><th>Дней (ср.)</th><th>С доработкой</th><th>Доработок</th><th>Опоздания</th></tr>
+      ${d.months.length ? d.months.map((m) => `<tr><td>${mname(m.m)}</td><td>${m.total}</td><td>${m.delivered}</td><td>${m.avg_days ?? '—'}</td><td>${m.remade} (${pct(m.remade, m.total)})</td><td>${m.remakes}</td><td class="${m.late ? 'neg' : ''}">${m.late}</td></tr>`).join('') : '<tr><td colspan="7" class="mut">Нет данных</td></tr>'}
+    </table></div></div>
+    <div class="acts"><button class="btn alt" data-act="csv">Скачать для Excel (${d.rows.length} работ)</button></div></div>`);
+}
+function csv() {
+  const rows = S.stats.rows;
+  const h = ['Номер', 'Дата оформления', 'Пациент', 'Врач', 'Лаборатория', 'Вид работы', 'Зубы', 'Система', 'Метод', 'Тип', 'Материал', 'Цвет', 'Статус', 'Визит', 'Закрыто', 'Доработок', 'Опоздание'];
+  const q = (v) => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+  const lines = [h.map(q).join(';')].concat(rows.map((r) => [num(r.id), dmy(r.created_at.slice(0, 10)), r.fio, r.doctor, r.lab, r.work_type, teethTxt(r.teeth), r.implant_system, r.method, r.temp ? 'Временная' : 'Постоянная', r.material, r.shade, STATUS[r.status], r.due_date ? dmy(r.due_date) : '', r.closed_at ? dmy(r.closed_at.slice(0, 10)) : '', r.remakes, r.was_late ? 'да' : ''].map(q).join(';')));
+  const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `gam-lab-${mskDate()}.csv`; document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ============================ настройки ============================ */
+async function renderSettings() {
+  if (role() !== 'super') return go('');
+  const tab = route()[1] || S.stab; S.stab = tab;
+  const T = [['users', 'Сотрудники'], ['labs', 'Лаборатории'], ['catalog', 'Предметы'], ['storage', 'Хранилище']];
+  const head = `<div class="narrow"><h2>Настройки</h2><div class="tabs">${T.map(([k, t]) => `<button class="tab" data-go="settings/${k}" aria-selected="${tab === k}">${t}</button>`).join('')}</div>`;
+  pane(head + '<div class="loading">Загрузка…</div></div>');
+  if (tab === 'users') {
+    const us = await guard(() => call('lab_users_list')); if (!us) return; S.users = us;
+    const labName = (id) => S.boot.labs.find((l) => l.id === id)?.name || '';
+    pane(head + `<div class="card"><h3><span class="grow">Сотрудники и доступ</span><button class="btn sm" data-act="u-new">+ Добавить</button></h3>
+      ${us.map((u) => `<div class="urow"><div class="grow"><b>${esc(u.name)}</b> <span class="tag ${u.role === 'lab' ? 'blue' : ''}">${ROLES[u.role]}${u.role === 'lab' ? ' · ' + esc(labName(u.lab_id)) : ''}</span>${u.active ? '' : ' <span class="tag bad">отключён</span>'}${u.locked ? ' <span class="tag warn">заблокирован</span>' : ''}
+        <div class="small mut">${u.role === 'assistant' ? 'Вход: имя + PIN' : 'Логин: ' + esc(u.login || '')}</div></div>
+        ${u.role === 'assistant' ? `<button class="btn sm ghost" data-act="u-pin" data-id="${u.id}">Новый PIN</button>` : ''}<button class="btn sm alt" data-act="u-edit" data-id="${u.id}">Изменить</button></div>`).join('')}
+      </div><div class="small mut">Ассистенты входят по имени и PIN-коду. Врачи, администраторы и лаборатория — по логину и паролю.</div></div>`);
+  } else if (tab === 'labs') {
+    pane(head + `<div class="card"><h3><span class="grow">Лаборатории</span><button class="btn sm" data-act="l-new">+ Добавить</button></h3>
+      ${S.boot.labs.map((l) => `<div class="urow"><div class="grow"><b>${esc(l.name)}</b>${l.active ? '' : ' <span class="tag bad">отключена</span>'}</div><button class="btn sm alt" data-act="l-edit" data-id="${l.id}">Изменить</button></div>`).join('')}
+      </div><div class="small mut">Чтобы лаборатория могла войти, добавьте для неё сотрудника с ролью «Лаборатория» во вкладке «Сотрудники».</div></div>`);
+  } else if (tab === 'catalog') {
+    const cat = S.boot.catalog; const groups = [...new Set(cat.map((c) => c.grp))];
+    pane(head + `<div class="card"><h3><span class="grow">Каталог предметов для отправки</span><button class="btn sm" data-act="c-new">+ Добавить</button></h3>
+      ${groups.map((g) => `<div class="gh">${esc(g)}</div>${cat.filter((c) => c.grp === g).map((c) => `<div class="urow"><div class="grow">${esc(c.name)} ${c.returnable ? '' : '<span class="tag">не возвращается</span>'}${c.active ? '' : ' <span class="tag bad">скрыт</span>'}</div><button class="btn sm alt" data-act="c-edit" data-id="${c.id}">Изменить</button></div>`).join('')}`).join('')}
+      </div></div>`);
+  } else if (tab === 'storage') {
+    const st = await guard(() => call('lab_storage')); if (!st) return; S.storage = st;
+    const p = st.used / st.limit; const cls = p >= 0.9 ? 'b' : p >= 0.8 ? 'w' : '';
+    const can = st.closed.reduce((s, c) => s + Number(c.bytes), 0);
+    pane(head + `<div class="card"><h3>Хранилище файлов</h3>
+      <div class="meter ${cls}"><i style="width:${Math.min(100, p * 100).toFixed(1)}%"></i></div>
+      <div><b>${mb(st.used)}</b> из ${mb(st.limit)} (${Math.round(p * 100)}%) · из них лаборатория: ${mb(st.lab)}</div>
+      <div class="small mut" style="margin-top:6px">При заполнении на 80% появится предупреждение. Удаляются только фото и файлы закрытых работ — сами работы, переписка и история остаются.</div>
+      </div>
+      <div class="card"><h3>Закрытые работы с файлами</h3>
+      ${st.closed.length ? `<div class="tw"><table><tr><th>Работа</th><th>Закрыта</th><th>Файлов</th><th>Размер</th></tr>${st.closed.map((c) => `<tr class="click" data-go="o/${c.id}"><td>${num(c.id)} · ${esc(c.fio)}</td><td>${dmy(c.closed_at.slice(0, 10))}</td><td>${c.files}</td><td>${mb(c.bytes)}</td></tr>`).join('')}</table></div>
+        <div class="acts"><button class="btn" data-act="clean">Освободить место (до ${mb(can)})</button></div>` : '<div class="mut small">Нет закрытых работ с файлами.</div>'}</div></div>`);
+  }
+}
+function userSheet(u) {
+  u = u || { role: 'doctor', name: '', login: '', lab_id: S.boot.labs[0]?.id, active: true };
+  sheet(`<h3>${u.id ? 'Изменить сотрудника' : 'Новый сотрудник'}</h3>
+    <label class="field"><span>Имя (как будет видно в программе) *</span><input class="inp" id="u-name" value="${esc(u.name)}"></label>
+    <label class="field"><span>Роль</span><select class="inp" id="u-role">${Object.entries(ROLES).map(([k, t]) => `<option value="${k}" ${u.role === k ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
+    <label class="field" id="u-labf"><span>Лаборатория</span><select class="inp" id="u-lab">${S.boot.labs.map((l) => `<option value="${l.id}" ${u.lab_id === l.id ? 'selected' : ''}>${esc(l.name)}</option>`).join('')}</select></label>
+    <div id="u-pw"><label class="field"><span>Логин *</span><input class="inp" id="u-login" value="${esc(u.login || '')}" autocapitalize="none" autocomplete="off"></label>
+    <label class="field"><span>${u.id ? 'Новый пароль (оставьте пустым, чтобы не менять)' : 'Пароль * (минимум 6 символов)'}</span><input class="inp" id="u-pass" type="text" autocomplete="off"></label></div>
+    <div class="small mut" id="u-pinnote">Для ассистента PIN-код будет создан автоматически.</div>
+    ${u.id ? `<label class="chk"><input type="checkbox" id="u-act" ${u.active ? 'checked' : ''}> Доступ включён</label>` : ''}
+    <div class="acts"><button class="btn" data-act="u-save" data-id="${u.id || ''}">Сохранить</button></div>`);
+  const sync = () => { const r = $('#u-role').value; $('#u-labf').classList.toggle('hide', r !== 'lab'); $('#u-pw').classList.toggle('hide', r === 'assistant'); $('#u-pinnote').classList.toggle('hide', r !== 'assistant'); };
+  $('#u-role').addEventListener('change', sync); sync();
+}
+function pinSheet(name, pin) {
+  sheet(`<h3>PIN-код: ${esc(name)}</h3><div class="pin-show">${esc(pin)}</div><div class="small mut">Передайте PIN сотруднику. Повторно его увидеть нельзя — только создать новый.</div><div class="acts"><button class="btn" data-act="close">Готово</button></div>`);
+}
+
+/* ============================ вход ============================ */
+let PIN = { id: null, name: '', v: '' };
+async function renderLogin() {
+  pane('<div class="loading">Загрузка…</div>');
+  let need = false, list = [];
+  try { [need, list] = await Promise.all([rpc('lab_setup_needed'), rpc('lab_pin_list')]); }
+  catch (e) { return pane(`<div class="narrow"><div class="banner bad">${esc(errText(e))}</div><button class="btn" data-act="reload">Повторить</button></div>`); }
+  if (need) {
+    return pane(`<div class="narrow" style="max-width:480px"><h2>Первый запуск</h2><div class="card">
+      <div class="small mut" style="margin-bottom:12px">Создайте учётную запись суперадмина. Только суперадмин добавляет сотрудников и лабораторию.</div>
+      <label class="field"><span>Ваше имя</span><input class="inp" id="su-name" placeholder="напр. Д-р Сейван"></label>
+      <label class="field"><span>Логин</span><input class="inp" id="su-login" autocapitalize="none" autocomplete="username"></label>
+      <label class="field"><span>Пароль (минимум 6 символов)</span><input class="inp" id="su-pass" type="password" autocomplete="new-password"></label>
+      <div class="acts"><button class="btn" data-act="setup">Создать и войти</button></div></div></div>`);
+  }
+  pane(`<div class="narrow" style="max-width:560px"><h2>Вход</h2>
+    ${list.length ? `<div class="card"><h3>Ассистенты — вход по PIN</h3><div class="pick">${list.map((s) => `<button data-act="pin-pick" data-id="${s.id}" data-name="${esc(s.name)}">${esc(s.name)}</button>`).join('')}</div></div>` : ''}
+    <div class="card"><h3>Врачи, администраторы, лаборатория</h3>
+      <label class="field"><span>Логин</span><input class="inp" id="l-login" autocapitalize="none" autocomplete="username"></label>
+      <label class="field"><span>Пароль</span><input class="inp" id="l-pass" type="password" autocomplete="current-password"></label>
+      <label class="chk"><input type="checkbox" id="l-rem" checked> Запомнить на этом устройстве</label>
+      <div id="l-err" class="small" style="color:var(--bad);min-height:20px"></div>
+      <div class="acts"><button class="btn" data-act="login">Войти</button></div></div></div>`);
+  $('#l-pass').addEventListener('keydown', (e) => { if (e.key === 'Enter') doLogin(); });
+}
+function pinPad() {
+  sheet(`<h3>${esc(PIN.name)}</h3><div class="small mut" style="text-align:center">Введите PIN-код</div>
+    <div class="dots" id="dots">${[0, 1, 2, 3].map((i) => `<i class="${i < PIN.v.length ? 'on' : ''}"></i>`).join('')}</div>
+    <div class="pad">${[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '⌫'].map((k) => `<button class="${k === '' ? 'e' : ''}" data-act="pk" data-k="${k}">${k}</button>`).join('')}</div>
+    <label class="chk" style="justify-content:center;margin-top:12px"><input type="checkbox" id="p-rem" checked> Запомнить на этом устройстве</label>`);
+}
+async function pinKey(k) {
+  if (k === '⌫') PIN.v = PIN.v.slice(0, -1); else if (PIN.v.length < 4) PIN.v += k;
+  const dots = $('#dots'); if (dots) dots.innerHTML = [0, 1, 2, 3].map((i) => `<i class="${i < PIN.v.length ? 'on' : ''}"></i>`).join('');
+  if (PIN.v.length === 4) {
+    try {
+      const r = await rpc('lab_pin_login', { p_id: PIN.id, p_pin: PIN.v, p_remember: $('#p-rem').checked });
+      if (!r.ok) { PIN.v = ''; dots.classList.add('err', 'shake'); setTimeout(() => { dots.classList.remove('err', 'shake'); dots.innerHTML = [0, 1, 2, 3].map(() => '<i></i>').join(''); }, 600); toast(ERR[r.err] || 'Неверный PIN', true); return; }
+      startSession(r);
+    } catch (e) { PIN.v = ''; toast(errText(e), true); }
+  }
+}
+async function doLogin() {
+  const err = $('#l-err'); err.textContent = '';
+  const l = $('#l-login').value.trim(), p = $('#l-pass').value;
+  if (!l || !p) { err.textContent = 'Введите логин и пароль'; return; }
+  try { const r = await rpc('lab_login', { p_login: l, p_pass: p, p_remember: $('#l-rem').checked }); if (!r.ok) { err.textContent = ERR[r.err] || 'Ошибка входа'; return; } startSession(r); }
+  catch (e) { err.textContent = errText(e); }
+}
+async function startSession(r) {
+  S.tok = r.token; S.me = r.me; LS.set('gamlab_tok', S.tok); LS.set('gamlab_me', S.me);
+  if (S.mine == null) S.mine = S.me.role === 'doctor';
+  closeSheet(); toast('Здравствуйте, ' + S.me.name);
+  await loadAll(); go('');
+}
+async function logout(silent) {
+  if (S.tok && !silent) { try { await rpc('lab_logout', { p_token: S.tok }); } catch (e) {} }
+  S.tok = null; S.me = null; S.boot = null; S.list = []; S.order = null; LS.del('gamlab_tok'); LS.del('gamlab_me');
+  closeSheet(); renderWho(); renderNav(); if (!silent) toast('Вы вышли'); location.hash = '#/'; render();
+}
+
+/* ============================ отрисовка ============================ */
+async function render() {
+  renderWho();
+  if (!S.tok) { renderNav(); return renderLogin(); }
+  if (!S.boot) { pane('<div class="loading">Загрузка…</div>'); await loadAll(); if (!S.tok) return; }
+  const [r, a] = route();
+  renderNav();
+  if (r === 'o' && a) {
+    const id = +a;
+    if (!S.order || S.oid !== id) { S.order = null; S.pend = []; pane('<div class="loading">Загрузка…</div>'); await loadOrder(id); }
+    if (route()[0] !== 'o' || +route()[1] !== id) return;
+    renderOrder();
+    if (S.afterOpen === 'send' && S.order && S.order.order.status === 'new') { S.afterOpen = null; openSend(); }
+  } else if (r === 'new') {
+    if (!isClinic()) return go('');
+    if (!F || F.id) { F = blankForm(); if (S.prefill) { Object.assign(F, S.prefill); S.prefill = null; } }
+    renderForm();
+  } else if (r === 'edit' && a) {
+    const id = +a;
+    if (!F || F.id !== id) {
+      if (!S.order || S.oid !== id) await loadOrder(id);
+      const o = S.order.order;
+      F = { id: o.id, patient_id: o.patient_id, fio: o.fio, doctor_id: o.doctor_id, lab_id: o.lab_id, work_type: o.work_type, teeth: o.teeth.slice(), implant: o.implant, implant_system: o.implant_system || '', method: o.method || '',
+        temp: o.temp, material: o.material || '', shade: o.shade || '', shade_note: o.shade_note || '', notes: o.notes || '', due_date: o.due_date || '' };
+    }
+    renderForm();
+  } else if (r === 'away') renderAway();
+  else if (r === 'stats') renderStats();
+  else if (r === 'settings') renderSettings();
+  else { F = null; renderBoard(); }
+}
+async function loadAll() {
+  try {
+    const [b, l] = await Promise.all([call('lab_boot'), call('lab_list')]);
+    S.boot = b; S.me = b.me; LS.set('gamlab_me', S.me); S.list = l; S.loaded = true;
+    if (S.mine == null) S.mine = S.me.role === 'doctor';
+  } catch (e) {
+    if (String(e.message) === 'AUTH') return logout(true);
+    pane(`<div class="narrow"><div class="banner bad">${esc(errText(e))}</div><button class="btn" data-act="reload">Повторить</button></div>`);
+  }
+}
+async function refreshOrder(id) {
+  await Promise.all([loadOrder(id), loadList()]);
+  const [r, a] = route();
+  if (r === 'o' && +a === id) renderOrder();
+  renderNav();
+}
+
+/* ============================ события ============================ */
+document.addEventListener('click', async (e) => {
+  const g = e.target.closest('[data-go]');
+  if (g && !e.target.closest('[data-act]')) { e.preventDefault(); go(g.dataset.go); return; }
+  const im = e.target.closest('[data-img]');
+  if (im) {
+    e.preventDefault(); const u = S.urls[im.dataset.img]; const f = S.order?.msgs.flatMap((m) => m.files).find((x) => x.path === im.dataset.img);
+    const lb = document.createElement('div'); lb.className = 'lb';
+    lb.innerHTML = `<img src="${esc(u)}" alt=""><div class="rowx"><a class="btn sm" href="${esc(u)}&download=${encodeURIComponent(f ? f.name : 'photo.jpg')}" target="_blank" rel="noopener">Скачать</a><button class="btn sm ghost">Закрыть</button></div>`;
+    lb.addEventListener('click', (ev) => { if (!ev.target.closest('a')) lb.remove(); }); document.body.appendChild(lb); return;
+  }
+  const tb = e.target.closest('[data-tab]');
+  if (tb) { S.tab = tb.dataset.tab; LS.set('gamlab_tab', S.tab); renderBoard(); return; }
+  const tooth = e.target.closest('#teeth [data-tooth]');
+  if (tooth && F) { const n = +tooth.dataset.tooth; F.teeth = F.teeth.includes(n) ? F.teeth.filter((x) => x !== n) : F.teeth.concat(n); tooth.setAttribute('aria-pressed', F.teeth.includes(n)); $('#f-tt').textContent = teethTxt(F.teeth); return; }
+  const chip = e.target.closest('[data-chips] button');
+  if (chip && F) {
+    const key = chip.parentElement.dataset.chips; let v = chip.dataset.v;
+    readForm();
+    if (key === 'temp') { F.temp = v === '1'; if (F.temp && (!F.material || F.material === 'Диоксид циркония')) F.material = 'PMMA'; if (!F.temp && (!F.material || F.material === 'PMMA')) F.material = 'Диоксид циркония'; }
+    else { F[key] = F[key] === v ? '' : v; if (key === 'work_type' && /имплант/i.test(v)) F.implant = true; }
+    renderForm(); return;
+  }
+  const rp = e.target.closest('#r-p button');
+  if (rp) { rp.parentElement.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b === rp)); return; }
+  const t = e.target.closest('[data-act]'); if (!t) return;
+  const d = t.dataset;
+  switch (d.act) {
+    case 'close': closeSheet(); break;
+    case 'reload': location.reload(); break;
+    case 'account': sheet(`<h3>${esc(S.me.name)}</h3><div class="mut" style="margin-bottom:6px">${ROLES[S.me.role]}</div>
+        <div class="small mut">${S.live ? '● Изменения появляются сразу, без обновления страницы.' : '○ Онлайн-обновление недоступно — обновляем раз в минуту.'}</div>
+        <div class="acts">${S.me.role !== 'assistant' ? '<button class="btn alt" data-act="chpass">Сменить пароль</button>' : ''}<button class="btn bad" data-act="logout">Выйти</button></div>`); break;
+    case 'chpass': sheet(`<h3>Сменить пароль</h3><label class="field"><span>Текущий пароль</span><input class="inp" type="password" id="cp-o" autocomplete="current-password"></label><label class="field"><span>Новый пароль (минимум 6 символов)</span><input class="inp" type="password" id="cp-n" autocomplete="new-password"></label><div class="acts"><button class="btn" data-act="chpass-go">Сохранить</button></div>`); break;
+    case 'chpass-go': { const r = await guard(() => call('lab_change_pass', { p_old: $('#cp-o').value, p_new: $('#cp-n').value })); if (r) { if (r.ok) { closeSheet(); toast('Пароль изменён'); } else toast('Текущий пароль неверный', true); } break; }
+    case 'logout': logout(); break;
+    case 'mine': S.mine = !S.mine; LS.set('gamlab_mine', S.mine); renderBoard(); break;
+    case 'login': doLogin(); break;
+    case 'setup': {
+      const r = await guard(() => rpc('lab_setup', { p_name: $('#su-name').value, p_login: $('#su-login').value, p_pass: $('#su-pass').value }));
+      if (r && r.ok) startSession(r); break;
+    }
+    case 'pin-pick': PIN = { id: +d.id, name: d.name, v: '' }; pinPad(); break;
+    case 'pk': pinKey(d.k); break;
+    // форма
+    case 'form-cancel': { const id = F && F.id; F = null; go(id ? 'o/' + id : ''); break; }
+    case 'form-save': saveForm(false); break;
+    case 'form-save-send': saveForm(true); break;
+    case 'f-pat': F.patient_id = +d.id; F.fio = d.fio; readForm(); F.fio = d.fio; renderForm(); break;
+    case 'f-newpat': F.patient_id = null; readForm(); renderForm(); break;
+    // работа
+    case 'o-send': openSend(); break;
+    case 'o-receive': openReceive(); break;
+    case 'o-back': openBack(); break;
+    case 'o-ready': openReady(); break;
+    case 'o-delay': openDelay(); break;
+    case 'o-undelay': { const id = S.order.order.id; const r = await guard(() => call('lab_delay', { p_id: id, p_on: false, p_note: null })); if (r !== undefined) { toast('Задержка снята'); refreshOrder(id); } break; }
+    case 'o-edit': F = null; go('edit/' + S.order.order.id); break;
+    case 'o-more': { const o = S.order.order; F = null; S.prefill = { patient_id: o.patient_id, fio: o.fio, doctor_id: o.doctor_id, lab_id: o.lab_id, due_date: o.due_date || '' }; go('new'); break; }
+    case 'o-deliver': {
+      const away = outstanding(S.order).reduce((s, i) => s + i.left, 0);
+      sheet(`<h3>Сдать работу пациенту?</h3>${away ? `<div class="banner warn"><span>В лаборатории остаются предметы клиники: ${away} шт. Работа будет закрыта, но предметы останутся в списке «не вернулись».</span></div>` : ''}<div class="small mut">Работа будет закрыта. История и файлы сохранятся.</div><div class="acts"><button class="btn okb" data-act="deliver-go">Сдано пациенту</button></div>`); break;
+    }
+    case 'deliver-go': { const id = S.order.order.id; const r = await guard(() => call('lab_deliver', { p_id: id })); if (r !== undefined) { closeSheet(); toast('Работа сдана и закрыта'); refreshOrder(id); } break; }
+    case 'o-cancel': sheet(`<h3>Отменить работу?</h3><label class="field"><span>Причина</span><textarea class="inp" id="c-note" rows="3"></textarea></label><div class="acts"><button class="btn bad" data-act="cancel-go">Отменить работу</button></div>`); break;
+    case 'cancel-go': { const id = S.order.order.id; const r = await guard(() => call('lab_cancel', { p_id: id, p_note: $('#c-note').value })); if (r !== undefined) { closeSheet(); toast('Работа отменена'); refreshOrder(id); } break; }
+    case 'sq': {
+      const k = d.k; const dd = +d.d;
+      if (k[0] === 'x') { const e2 = SEND.extra[+k.slice(1)]; e2.qty = Math.max(0, e2.qty + dd); } else SEND.qty[k] = Math.max(0, (SEND.qty[k] || 0) + dd);
+      SEND.due = $('#s-due').value; SEND.note = $('#s-note').value;
+      const sc = $('.sheet').scrollTop; renderSend(); $('.sheet').scrollTop = sc; break;
+    }
+    case 'sp': SEND.purpose = d.v; SEND.due = $('#s-due').value; SEND.note = $('#s-note').value; renderSend(); break;
+    case 'sx': { const n = $('#s-xn').value.trim(); if (!n) break; SEND.extra.push({ name: n, qty: 1 }); SEND.due = $('#s-due').value; SEND.note = $('#s-note').value; const sc = $('.sheet').scrollTop; renderSend(); $('.sheet').scrollTop = sc + 60; break; }
+    case 'send-go': doSend(); break;
+    case 'recv-go': doReceive(); break;
+    case 'bq': { const it = outstanding(S.order)[+d.n]; BACK.q[it.name] = Math.min(it.left, Math.max(0, (BACK.q[it.name] || 0) + +d.d)); renderBack(); break; }
+    case 'back-go': doBack(); break;
+    case 'ready-go': { const id = S.order.order.id; const p = $('#r-p [aria-pressed=true]')?.dataset.v; const r = await guard(() => call('lab_ready', { p_id: id, p_purpose: p, p_note: $('#r-note').value })); if (r !== undefined) { closeSheet(); toast('Клиника увидит, что работа едет'); refreshOrder(id); } break; }
+    case 'delay-go': { const id = S.order.order.id; const r = await guard(() => call('lab_delay', { p_id: id, p_on: true, p_note: $('#d-note').value })); if (r !== undefined) { closeSheet(); toast('Клиника получила отметку о задержке'); refreshOrder(id); } break; }
+    case 'attach': { const fi = $('#fileIn'); fi.removeAttribute('capture'); fi.accept = ''; fi.click(); break; }
+    case 'attach-cam': { const fi = $('#fileIn'); fi.accept = 'image/*'; fi.setAttribute('capture', 'environment'); fi.click(); break; }
+    case 'unpend': S.pend.splice(+d.i, 1); { const m = $('#msg'); if (m) S.draft[S.oid] = m.value; } renderOrder(); break;
+    case 'send-msg': sendMsg(); break;
+    // статистика
+    case 'srange': S.statsRange = +d.n; renderStats(); break;
+    case 'csv': csv(); break;
+    // настройки
+    case 'u-new': userSheet(); break;
+    case 'u-edit': userSheet(S.users.find((u) => u.id === +d.id)); break;
+    case 'u-save': {
+      const r0 = $('#u-role').value;
+      const p = { id: d.id ? +d.id : null, role: r0, name: $('#u-name').value, login: $('#u-login').value, password: $('#u-pass').value, lab_id: r0 === 'lab' ? +$('#u-lab').value : null, active: $('#u-act') ? $('#u-act').checked : true };
+      const r = await guard(() => call('lab_user_save', { p }));
+      if (!r) break; if (!r.ok) { toast(ERR[r.err] || r.err, true); break; }
+      if (r.pin) pinSheet(p.name, r.pin); else { closeSheet(); toast('Сохранено'); }
+      await loadAll(); renderSettings(); break;
+    }
+    case 'u-pin': { const u = S.users.find((x) => x.id === +d.id); const pin = await guard(() => call('lab_user_pin', { p_id: +d.id })); if (pin) pinSheet(u.name, pin); break; }
+    case 'l-new': case 'l-edit': {
+      const l = d.id ? S.boot.labs.find((x) => x.id === +d.id) : { name: '', active: true };
+      sheet(`<h3>${d.id ? 'Лаборатория' : 'Новая лаборатория'}</h3><label class="field"><span>Название</span><input class="inp" id="lb-n" value="${esc(l.name)}"></label>${d.id ? `<label class="chk"><input type="checkbox" id="lb-a" ${l.active ? 'checked' : ''}> Активна</label>` : ''}<div class="acts"><button class="btn" data-act="l-save" data-id="${d.id || ''}">Сохранить</button></div>`); break;
+    }
+    case 'l-save': { const r = await guard(() => call('lab_lab_save', { p_id: d.id ? +d.id : null, p_name: $('#lb-n').value, p_active: $('#lb-a') ? $('#lb-a').checked : true })); if (r) { closeSheet(); await loadAll(); renderSettings(); } break; }
+    case 'c-new': case 'c-edit': {
+      const c = d.id ? S.boot.catalog.find((x) => x.id === +d.id) : { grp: '', name: '', returnable: true, active: true, sort: null };
+      const groups = [...new Set(S.boot.catalog.map((x) => x.grp))];
+      sheet(`<h3>${d.id ? 'Предмет' : 'Новый предмет'}</h3>
+        <label class="field"><span>Группа</span><input class="inp" id="c-g" list="c-gl" value="${esc(c.grp)}"><datalist id="c-gl">${groups.map((g) => `<option value="${esc(g)}">`).join('')}</datalist></label>
+        <label class="field"><span>Название</span><input class="inp" id="c-n" value="${esc(c.name)}"></label>
+        <label class="chk"><input type="checkbox" id="c-r" ${c.returnable ? 'checked' : ''}> Должен вернуться в клинику</label>
+        ${d.id ? `<label class="chk"><input type="checkbox" id="c-a" ${c.active ? 'checked' : ''}> Показывать в списке</label>` : ''}
+        <div class="acts"><button class="btn" data-act="c-save" data-id="${d.id || ''}">Сохранить</button></div>`); break;
+    }
+    case 'c-save': { const p = { id: d.id ? +d.id : null, grp: $('#c-g').value, name: $('#c-n').value, returnable: $('#c-r').checked, active: $('#c-a') ? $('#c-a').checked : true }; const r = await guard(() => call('lab_cat_save', { p })); if (r) { closeSheet(); await loadAll(); renderSettings(); } break; }
+    case 'clean': {
+      const st = S.storage; const target = st.limit * 0.6; let need = st.used - target; const pick = [];
+      for (const c of st.closed) { if (need <= 0 && pick.length) break; pick.push(c); need -= Number(c.bytes); }
+      const sz = pick.reduce((s, c) => s + Number(c.bytes), 0);
+      S.cleanIds = pick.map((c) => c.id);
+      sheet(`<h3>Освободить место</h3><div>Будут удалены фото и файлы <b>${pick.length}</b> самых старых закрытых работ — примерно <b>${mb(sz)}</b>.</div>
+        <div class="small mut" style="margin-top:8px">Работы, переписка и история останутся. Удалённые файлы восстановить нельзя.</div>
+        <div class="acts"><button class="btn bad" data-act="clean-go">Удалить файлы</button></div>`); break;
+    }
+    case 'clean-go': { t.disabled = true; try { const r = await fnFiles({ action: 'cleanup', order_ids: S.cleanIds }); closeSheet(); toast(`Удалено файлов: ${r.count}, освобождено ${mb(r.freed)}`); await loadAll(); renderSettings(); } catch (e2) { toast(errText(e2), true); t.disabled = false; } break; }
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { const lb = $('.lb'); if (lb) lb.remove(); else closeSheet(); }
+  if ($('#ov') && $('.pad') && /^[0-9]$/.test(e.key)) pinKey(e.key);
+  if ($('#ov') && $('.pad') && e.key === 'Backspace') pinKey('⌫');
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && e.target.id === 'msg') sendMsg();
+});
+
+/* ============================ онлайн-обновления ============================ */
+let ws = null, wsHb = null, chgT = null; const chgIds = new Set();
+function realtime() {
+  if (!S.tok || ws) return;
+  try { ws = new WebSocket(SB.replace('https', 'wss') + '/realtime/v1/websocket?apikey=' + KEY + '&vsn=1.0.0'); } catch (e) { return; }
+  let ref = 1;
+  ws.onopen = () => {
+    ws.send(JSON.stringify({ topic: 'realtime:gamlab', event: 'phx_join', payload: { config: { broadcast: { self: false, ack: false }, presence: { key: '' }, private: false }, access_token: KEY }, ref: String(ref++), join_ref: '1' }));
+    wsHb = setInterval(() => { try { ws.send(JSON.stringify({ topic: 'phoenix', event: 'heartbeat', payload: {}, ref: String(ref++) })); } catch (e) {} }, 25000);
+  };
+  ws.onmessage = (e) => {
+    let m; try { m = JSON.parse(e.data); } catch (x) { return; }
+    if (m.event === 'phx_reply' && m.topic === 'realtime:gamlab' && m.payload && m.payload.status === 'ok' && !S.live) { S.live = true; renderWho(); }
+    if (m.event === 'broadcast' && m.payload) {
+      const p = m.payload; const oid = (p.payload && p.payload.o) ?? p.o;
+      if (oid) chgIds.add(+oid);
+      clearTimeout(chgT); chgT = setTimeout(onChange, 500);
+    }
+  };
+  ws.onclose = () => { clearInterval(wsHb); ws = null; if (S.live) { S.live = false; renderWho(); } setTimeout(realtime, 5000); };
+  ws.onerror = () => { try { ws.close(); } catch (e) {} };
+}
+async function onChange() {
+  if (!S.tok) return;
+  const ids = [...chgIds]; chgIds.clear();
+  const [r, a] = route();
+  const busy = $('#ov') || (document.activeElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName) && document.activeElement.id !== 'msg');
+  await loadList();
+  if (r === 'o' && ids.includes(+a) && !$('#ov') && !S.pend.some((p) => p.busy)) {
+    const m = $('#msg'); const focused = document.activeElement === m; if (m) S.draft[+a] = m.value;
+    await loadOrder(+a); if (route()[0] === 'o' && +route()[1] === +a) { renderOrder(); if (focused) { const n = $('#msg'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); } }
+  } else if ((r === '' || r === undefined) && !busy) renderBoard();
+  renderNav();
+}
+
+/* ============================ запуск ============================ */
+async function boot() {
+  renderBrand();
+  await render();
+  realtime();
+  setInterval(() => { if (document.visibilityState === 'visible' && S.tok) { realtime(); if (!S.live) { chgIds.add(S.oid); onChange(); } } }, 60000);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.tok) { realtime(); chgIds.add(S.oid); onChange(); } });
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+boot();
+</script>
+</body>
+</html>
