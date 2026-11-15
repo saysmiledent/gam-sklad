@@ -266,8 +266,11 @@ const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZi
 const LOGO_SRC = 'https://static.tildacdn.com/tild3261-6534-4665-b833-386339663338/GAM_CLINIC.svg';
 const STORAGE_LIMIT = 1073741824;
 
-const WORK = ['Коронка', 'Коронка на имплантате', 'Мостовидный протез', 'Мост на имплантатах', 'Винир', 'Вкладка / накладка', 'Индивидуальный абатмент', 'Съёмный протез', 'Каппа / сплинт', 'Другое'];
+const WORK = ['Коронка', 'Коронка на имплантате', 'Мостовидный протез', 'Мост на имплантатах', 'All-on-4', 'All-on-6', 'Балочная конструкция', 'Винир', 'Вкладка / накладка', 'Индивидуальный абатмент', 'Съёмный протез', 'Каппа / сплинт', 'Другое'];
 const SYSTEMS = ['Straumann NC', 'Straumann RC', 'Medentika Universal', 'Другая'];
+const SYS_SHORT = { 'Straumann NC': 'NC', 'Straumann RC': 'RC', 'Medentika Universal': 'Medentika', 'Другая': 'Другая', pontic: 'Без имплантата' };
+function implGroups(map) { const g = {}; Object.entries(map || {}).sort((a, b) => a[0] - b[0]).forEach(([t, v]) => { if (v && v !== 'pontic') (g[v] = g[v] || []).push(t); }); return g; }
+function implSummary(map) { return Object.entries(implGroups(map)).map(([k, v]) => `${k}: ${v.join(', ')}`).join('; '); }
 const METHODS = ['Оттиск', 'Скан'];
 const MATERIALS = ['PMMA', 'Диоксид циркония', 'E.max', 'Металлокерамика', 'Композит', 'Другое'];
 const SHADES = ['A1', 'A2', 'A3', 'A3.5', 'A4', 'B1', 'B2', 'B3', 'B4', 'C1', 'C2', 'C3', 'C4', 'D2', 'D3', 'D4', 'BL1', 'BL2', 'BL3', 'BL4'];
@@ -517,7 +520,8 @@ function renderOrder() {
   const kv = [
     ['Врач', esc(o.doctor || '—')], ...(S.boot && S.boot.labs.length > 1 ? [['Лаборатория', esc(o.lab)]] : []),
     ['Вид работы', esc(o.work_type)],
-    ...(o.implant ? [['Имплантаты', esc(o.implant_system || '—')]] : []),
+    ...(o.implant ? [['Имплантаты', (() => { const g = implGroups(legacyMap(o)); const k = Object.keys(g); return k.length ? k.map((s) => `${esc(s)} — ${g[s].join(', ')} <span class="mut">(${g[s].length} шт)</span>`).join('<br>') : esc(o.implant_system || '—'); })()]] : []),
+    ...(o.implant && Object.values(o.implant_map || {}).includes('pontic') ? [['Без имплантата', Object.entries(o.implant_map).filter(([, v]) => v === 'pontic').map(([t]) => t).sort((a, b) => a - b).join(', ')]] : []),
     ['Метод', esc(o.method || '—')],
     ['Тип', o.temp ? 'Временная' : 'Постоянная'], ['Материал', esc(o.material || '—')],
     ['Цвет', esc([o.shade, o.shade_note].filter(Boolean).join(' · ') || '—')],
@@ -587,7 +591,7 @@ let F = null;
 function blankForm() {
   const me = S.me;
   return { id: null, patient_id: null, fio: '', doctor_id: (me.role === 'doctor' || me.role === 'super') ? me.id : null, lab_id: S.boot.labs.find((l) => l.active)?.id || null,
-    work_type: '', teeth: [], implant: false, implant_system: '', method: '', temp: false, material: '', shade: '', shade_note: '', notes: '', due_date: '' };
+    work_type: '', teeth: [], implant: false, implant_system: '', implant_map: {}, method: '', temp: false, material: '', shade: '', shade_note: '', notes: '', due_date: '' };
 }
 function renderForm() {
   const labs = S.boot.labs.filter((l) => l.active || l.id === F.lab_id);
@@ -609,7 +613,7 @@ function renderForm() {
     <div class="field"><span class="lbl">Вид работы *</span>${chips(WORK, 'work_type')}</div>
     <div class="field"><span class="lbl">Зубы <span class="mut" id="f-tt">${teethTxt(F.teeth)}</span></span>${teethChart(F.teeth)}</div>
     <label class="chk"><input type="checkbox" id="f-impl" ${F.implant ? 'checked' : ''}> На имплантатах</label>
-    <div class="field ${F.implant ? '' : 'hide'}" id="f-implbox" style="margin-top:8px"><span class="lbl">Система имплантатов</span>${chips(SYSTEMS, 'implant_system')}</div>
+    <div class="field ${F.implant ? '' : 'hide'}" id="f-implbox" style="margin-top:8px">${implBox()}</div>
     <div class="field"><span class="lbl">Метод</span>${chips(METHODS, 'method')}</div>
   </div>
   <div class="card">
@@ -635,7 +639,17 @@ function renderForm() {
       } catch (e) {}
     }, 250);
   });
-  $('#f-impl').addEventListener('change', (e) => { F.implant = e.target.checked; $('#f-implbox').classList.toggle('hide', !F.implant); });
+  $('#f-impl').addEventListener('change', (e) => { F.implant = e.target.checked; $('#f-implbox').classList.toggle('hide', !F.implant); $('#f-implbox').innerHTML = implBox(); });
+}
+function implBox() {
+  const teeth = [...F.teeth].sort((a, b) => a - b);
+  if (!teeth.length) return '<div class="lbl">Имплантаты</div><div class="small mut">Отметьте на схеме зубы / позиции — затем укажите систему для каждого имплантата.</div>';
+  const opts = SYSTEMS.concat('pontic');
+  return `<div class="lbl">Система имплантата для каждой позиции</div>
+    <div class="small mut" style="margin-bottom:6px">Сразу для всех:</div>
+    <div class="chips" style="margin-bottom:10px">${SYSTEMS.map((v) => `<button type="button" data-act="im-all" data-v="${esc(v)}">${SYS_SHORT[v]}</button>`).join('')}</div>
+    ${teeth.map((t) => `<div class="itm" style="flex-wrap:wrap"><b style="min-width:34px;font-size:17px;color:var(--deep)">${t}</b><div class="chips" style="flex:1">${opts.map((v) => `<button type="button" data-act="im-one" data-t="${t}" data-v="${esc(v)}" aria-pressed="${F.implant_map[t] === v}">${SYS_SHORT[v]}</button>`).join('')}</div></div>`).join('')}
+    <div class="small mut" style="margin-top:6px">«Без имплантата» — промежуточная часть моста или зуб без опоры на имплантат.</div>`;
 }
 function readForm() {
   F.fio = $('#f-fio').value; F.doctor_id = +$('#f-doc').value || null; if ($('#f-lab')) F.lab_id = +$('#f-lab').value;
@@ -646,8 +660,15 @@ async function saveForm(thenSend) {
   if (!F.fio.trim()) { toast('Укажите ФИО пациента', true); $('#f-fio').focus(); return; }
   if (F.fio.trim().split(/\s+/).length < 2) { toast('Укажите фамилию и имя (и отчество)', true); $('#f-fio').focus(); return; }
   if (!F.work_type) { toast('Выберите вид работы', true); return; }
+  if (F.implant) {
+    Object.keys(F.implant_map).forEach((k) => { if (!F.teeth.includes(+k)) delete F.implant_map[k]; });
+    const miss = F.teeth.filter((t) => !F.implant_map[t]);
+    if (!F.teeth.length) { toast('Отметьте на схеме позиции имплантатов', true); return; }
+    if (miss.length) { toast('Укажите систему имплантата для: ' + miss.sort((a, b) => a - b).join(', '), true); $('#f-implbox').scrollIntoView({ block: 'center' }); return; }
+    if (!Object.keys(implGroups(F.implant_map)).length) { toast('Хотя бы одна позиция должна быть на имплантате', true); return; }
+  }
   const p = { id: F.id, patient_id: F.patient_id, fio: F.id ? F.fio : (F.patient_id ? null : F.fio), doctor_id: F.doctor_id, lab_id: F.lab_id, work_type: F.work_type, teeth: F.teeth,
-    implant: F.implant, implant_system: F.implant ? F.implant_system : '', method: F.method, temp: F.temp, material: F.material, shade: F.shade, shade_note: F.shade_note, notes: F.notes, due_date: F.due_date };
+    implant: F.implant, implant_system: F.implant ? implSummary(F.implant_map) : '', implant_map: F.implant ? F.implant_map : {}, method: F.method, temp: F.temp, material: F.material, shade: F.shade, shade_note: F.shade_note, notes: F.notes, due_date: F.due_date };
   const id = await guard(() => call('lab_save_order', { p }));
   if (!id) return;
   toast(F.id ? 'Сохранено' : 'Работа оформлена: ' + num(id));
@@ -1018,7 +1039,7 @@ async function render() {
     if (!F || F.id !== id) {
       if (!S.order || S.oid !== id) await loadOrder(id);
       const o = S.order.order;
-      F = { id: o.id, patient_id: o.patient_id, fio: o.fio, doctor_id: o.doctor_id, lab_id: o.lab_id, work_type: o.work_type, teeth: o.teeth.slice(), implant: o.implant, implant_system: o.implant_system || '', method: o.method || '',
+      F = { id: o.id, patient_id: o.patient_id, fio: o.fio, doctor_id: o.doctor_id, lab_id: o.lab_id, work_type: o.work_type, teeth: o.teeth.slice(), implant: o.implant, implant_system: o.implant_system || '', implant_map: legacyMap(o), method: o.method || '',
         temp: o.temp, material: o.material || '', shade: o.shade || '', shade_note: o.shade_note || '', notes: o.notes || '', due_date: o.due_date || '' };
     }
     renderForm();
@@ -1026,6 +1047,11 @@ async function render() {
   else if (r === 'stats') renderStats();
   else if (r === 'settings') renderSettings();
   else { F = null; renderBoard(); }
+}
+function legacyMap(o) {
+  const m = Object.assign({}, o.implant_map || {});
+  if (o.implant && !Object.keys(m).length && SYSTEMS.includes(o.implant_system)) o.teeth.forEach((t) => { m[t] = o.implant_system; });
+  return m;
 }
 async function loadAll() {
   try {
@@ -1058,13 +1084,16 @@ document.addEventListener('click', async (e) => {
   const tb = e.target.closest('[data-tab]');
   if (tb) { S.tab = tb.dataset.tab; LS.set('gamlab_tab', S.tab); renderBoard(); return; }
   const tooth = e.target.closest('#teeth [data-tooth]');
-  if (tooth && F) { const n = +tooth.dataset.tooth; F.teeth = F.teeth.includes(n) ? F.teeth.filter((x) => x !== n) : F.teeth.concat(n); tooth.setAttribute('aria-pressed', F.teeth.includes(n)); $('#f-tt').textContent = teethTxt(F.teeth); return; }
+  if (tooth && F) { const n = +tooth.dataset.tooth; F.teeth = F.teeth.includes(n) ? F.teeth.filter((x) => x !== n) : F.teeth.concat(n); tooth.setAttribute('aria-pressed', F.teeth.includes(n)); $('#f-tt').textContent = teethTxt(F.teeth);
+    if (F.teeth.includes(n) && F.implant && !F.implant_map[n]) { const used = Object.values(F.implant_map).filter((v) => v !== 'pontic'); if (used.length && used.every((v) => v === used[0])) F.implant_map[n] = used[0]; }
+    if (!F.teeth.includes(n)) delete F.implant_map[n];
+    $('#f-implbox').innerHTML = implBox(); return; }
   const chip = e.target.closest('[data-chips] button');
   if (chip && F) {
     const key = chip.parentElement.dataset.chips; let v = chip.dataset.v;
     readForm();
     if (key === 'temp') { F.temp = v === '1'; if (F.temp && (!F.material || F.material === 'Диоксид циркония')) F.material = 'PMMA'; if (!F.temp && (!F.material || F.material === 'PMMA')) F.material = 'Диоксид циркония'; }
-    else { F[key] = F[key] === v ? '' : v; if (key === 'work_type' && /имплант/i.test(v)) F.implant = true; }
+    else { F[key] = F[key] === v ? '' : v; if (key === 'work_type' && /имплант|all-on|балоч/i.test(v)) F.implant = true; }
     renderForm(); return;
   }
   const rp = e.target.closest('#r-p button');
@@ -1093,6 +1122,8 @@ document.addEventListener('click', async (e) => {
     case 'form-save': saveForm(false); break;
     case 'form-save-send': saveForm(true); break;
     case 'f-pat': F.patient_id = +d.id; F.fio = d.fio; readForm(); F.fio = d.fio; renderForm(); break;
+    case 'im-all': F.teeth.forEach((x) => { F.implant_map[x] = d.v; }); $('#f-implbox').innerHTML = implBox(); break;
+    case 'im-one': F.implant_map[d.t] = d.v; $('#f-implbox').innerHTML = implBox(); break;
     case 'f-newpat': F.patient_id = null; readForm(); renderForm(); break;
     // работа
     case 'o-send': openSend(); break;

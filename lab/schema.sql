@@ -740,3 +740,7 @@ begin
   delete from lab_catalog where id = p_id;
   return 'deleted';
 end $$;
+
+-- v3: система имплантата для каждой позиции (NC/RC/Medentika в одной конструкции)
+alter table lab_orders add column if not exists implant_map jsonb not null default '{}'::jsonb;
+-- lab_save_order обновлена: сохраняет p->'implant_map' (объект "зуб": "система" | "pontic")
