@@ -727,3 +727,16 @@ select * from (values
   ('Прочее', 'Оттиск (слепок)', false, 72), ('Прочее', 'Регистрат прикуса', false, 73)
 ) v(grp, name, returnable, sort)
 where not exists (select 1 from lab_catalog);
+
+-- v2: удаление предметов каталога (если предмет уже отправлялся — только скрывается)
+create or replace function lab_cat_delete(p_token uuid, p_id int) returns text
+language plpgsql security definer set search_path = public as $$
+begin
+  perform lab__super(p_token);
+  if exists (select 1 from lab_moves where catalog_id = p_id) then
+    update lab_catalog set active = false where id = p_id;
+    return 'hidden';
+  end if;
+  delete from lab_catalog where id = p_id;
+  return 'deleted';
+end $$;

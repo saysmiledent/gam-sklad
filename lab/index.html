@@ -1156,9 +1156,10 @@ document.addEventListener('click', async (e) => {
         <label class="field"><span>Название</span><input class="inp" id="c-n" value="${esc(c.name)}"></label>
         <label class="chk"><input type="checkbox" id="c-r" ${c.returnable ? 'checked' : ''}> Должен вернуться в клинику</label>
         ${d.id ? `<label class="chk"><input type="checkbox" id="c-a" ${c.active ? 'checked' : ''}> Показывать в списке</label>` : ''}
-        <div class="acts"><button class="btn" data-act="c-save" data-id="${d.id || ''}">Сохранить</button></div>`); break;
+        <div class="acts"><button class="btn" data-act="c-save" data-id="${d.id || ''}">Сохранить</button>${d.id ? `<button class="btn bad" data-act="c-del" data-id="${d.id}">Удалить</button>` : ''}</div>`); break;
     }
     case 'c-save': { const p = { id: d.id ? +d.id : null, grp: $('#c-g').value, name: $('#c-n').value, returnable: $('#c-r').checked, active: $('#c-a') ? $('#c-a').checked : true }; const r = await guard(() => call('lab_cat_save', { p })); if (r) { closeSheet(); await loadAll(); renderSettings(); } break; }
+    case 'c-del': { const r = await guard(() => call('lab_cat_delete', { p_id: +d.id })); if (r) { closeSheet(); toast(r === 'deleted' ? 'Предмет удалён' : 'Предмет уже отправлялся — он скрыт из списка, история сохранена'); await loadAll(); renderSettings(); } break; }
     case 'clean': {
       const st = S.storage; const target = st.limit * 0.6; let need = st.used - target; const pick = [];
       for (const c of st.closed) { if (need <= 0 && pick.length) break; pick.push(c); need -= Number(c.bytes); }
