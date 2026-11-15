@@ -147,6 +147,13 @@ td.neg{color:var(--bad);font-weight:700}
 .sub::-webkit-scrollbar{display:none}
 .sub button{flex:none;border:0;background:#e9e7e1;color:var(--slate);border-radius:10px;padding:9px 13px;font-weight:600;min-height:40px}
 .sub button[aria-selected=true]{background:var(--slate);color:#fff}
+.combo{position:relative}
+.sugg{position:absolute;left:0;right:0;top:100%;z-index:70;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 26px rgba(0,0,0,.16);max-height:270px;overflow-y:auto;margin-top:4px}
+.sugg button{display:block;width:100%;text-align:left;border:0;background:none;padding:11px 14px;border-top:1px solid var(--line);min-height:46px;overflow-wrap:anywhere}
+.sugg button:first-child{border-top:0}
+.sugg button small{color:var(--mut)}
+.sugg button:active{background:var(--tint)}
+.sugg .empty{padding:14px}
 .loading{padding:30px;text-align:center;color:var(--mut)}
 .bars{display:flex;align-items:flex-end;gap:3px;height:150px;margin:10px 0 4px}
 .bars div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;min-width:4px;height:100%}
@@ -382,7 +389,7 @@ function listHTML() {
   let items = S.items.filter((i) => i.active);
   if (S.cat === '__low') items = items.filter(isLow);
   else if (S.cat !== '__all') items = items.filter((i) => String(i.category_id) === String(S.cat));
-  if (q) items = items.filter((i) => i.name.toLowerCase().includes(q));
+  if (q) items = rankItems(q, items);
   if (!items.length) return `<div class="empty">${q ? 'Ничего не найдено' : S.cat === '__low' ? 'Всё в наличии — ничего не заканчивается' : 'В этой категории пока нет позиций'}</div>`;
   const row = (i) => {
     const inB = S.basket[i.id] || 0; const low = isLow(i); const st = os[i.id];
@@ -430,7 +437,7 @@ function ordersHTML() {
 }
 
 /* ---------- управление (админ) ---------- */
-const ATABS = [['analytics', 'Аналитика'], ['receive', 'Приход'], ['count', 'Инвентаризация'], ['items', 'Позиции'], ['staff', 'Сотрудники'], ['history', 'История'], ['data', 'Данные']];
+const ATABS = [['analytics', 'Аналитика'], ['receive', 'Приход'], ['count', 'Инвентаризация'], ['items', 'Позиции'], ['staff', 'Сотрудники'], ['history', 'Журнал'], ['data', 'Данные']];
 function adminShell() {
   return `<div class="sub" role="tablist">${ATABS.map(([k, l]) => `<button role="tab" data-act="atab" data-k="${k}" aria-selected="${S.atab === k}">${l}</button>`).join('')}</div><div id="apane"><div class="loading">Загрузка…</div></div>`;
 }
@@ -476,9 +483,42 @@ async function openSeries(id, bucket = 'day') {
 }
 
 /* приход */
-function itemSelect(id = 'sel', withEmpty = true) {
-  return `<select class="inp" id="${id}">${withEmpty ? '<option value="">— выберите позицию —</option>' : ''}` +
-    S.cats.map((c) => { const g = S.items.filter((i) => i.active && i.category_id === c.id); return g.length ? `<optgroup label="${esc(c.name)}">${g.map((i) => `<option value="${i.id}">${esc(i.name)} (${i.stock} ${esc(i.unit)})</option>`).join('')}</optgroup>` : ''; }).join('') + `</select>`;
+const norm = (x) => String(x || '').toLowerCase().replace(/ё/g, 'е');
+function rankItems(q, list) {
+  const toks = norm(q).trim().split(/\s+/).filter(Boolean);
+  if (!toks.length) return list.slice();
+  const out = [];
+  list.forEach((i) => {
+    const n = norm(i.name);
+    if (!toks.every((t) => n.includes(t))) return;
+    const words = n.split(/[\s\-\/(),.+:%]+/);
+    const r = n.startsWith(toks[0]) ? 0 : words.some((w) => w.startsWith(toks[0])) ? 1 : 2;
+    out.push([r, n, i]);
+  });
+  out.sort((a, b) => a[0] - b[0] || a[1].localeCompare(b[1], 'ru'));
+  return out.map((x) => x[2]);
+}
+function itemSelect(id = 'sel') {
+  return `<div class="combo"><input class="inp" id="${id}-t" data-combo="${id}" autocomplete="off" autocapitalize="off" placeholder="Начните вводить название…"><input type="hidden" id="${id}"><div class="sugg hide" id="${id}-s"></div></div>`;
+}
+function comboShow(id) {
+  const t = $('#' + id + '-t'), box = $('#' + id + '-s'); if (!t || !box) return;
+  const res = rankItems(t.value, S.items.filter((i) => i.active)).slice(0, 8);
+  box.innerHTML = res.length ? res.map((i) => `<button type="button" data-act="combopick" data-cid="${id}" data-item="${i.id}">${esc(i.name)} <small>· ${i.stock} ${esc(i.unit)}</small></button>`).join('') : `<div class="empty small">Не найдено</div>`;
+  box.classList.remove('hide');
+}
+function setCombo(id, itemId) {
+  const it = itemById(+itemId), h = $('#' + id), t = $('#' + id + '-t'); if (!h || !t) return;
+  h.value = it ? String(it.id) : ''; t.value = it ? it.name : '';
+  const b = $('#' + id + '-s'); if (b) b.classList.add('hide');
+}
+function comboVal(id) {
+  const h = $('#' + id); if (h && h.value) return +h.value;
+  const t = $('#' + id + '-t'); if (!t || !t.value.trim()) return 0;
+  const res = rankItems(t.value, S.items.filter((i) => i.active));
+  const exact = res.find((i) => norm(i.name) === norm(t.value).trim());
+  if (exact) return exact.id;
+  return res.length === 1 ? res[0].id : 0;
 }
 function paneReceive() {
   const ordered = ((S.ov && S.ov.entries) || []).filter((e) => e.status === 'ordered' && e.item_id);
@@ -495,10 +535,10 @@ function drawRecv() {
 
 /* инвентаризация */
 function paneCount() {
-  let h = `<div class="card"><h3>Инвентаризация</h3><p class="small mut" style="margin-top:0">Впишите фактическое количество там, где пересчитали. Пустые поля не меняются. Если факт меньше учёта, разница будет записана как «неучтённый расход» и попадёт в статистику.</p></div>`;
+  let h = `<input class="search" data-filter="1" placeholder="Поиск по названию" autocomplete="off"><div class="card"><h3>Инвентаризация</h3><p class="small mut" style="margin-top:0">Впишите фактическое количество там, где пересчитали. Пустые поля не меняются. Если факт меньше учёта, разница будет записана как «неучтённый расход» и попадёт в статистику.</p></div>`;
   S.cats.forEach((c) => {
     const g = S.items.filter((i) => i.active && i.category_id === c.id); if (!g.length) return;
-    h += `<div class="list" style="margin-bottom:12px"><div class="gh">${esc(c.name)}</div>${g.map((i) => `<div class="row"><div class="rn"><div class="nm">${esc(i.name)}</div><div class="small mut">в учёте: ${i.stock} ${esc(i.unit)}</div></div><input class="inp cnt" data-id="${i.id}" data-was="${i.stock}" type="number" inputmode="numeric" min="0" placeholder="факт" style="width:92px"><span class="small diff" style="min-width:44px;text-align:right"></span></div>`).join('')}</div>`;
+    h += `<div class="list" style="margin-bottom:12px"><div class="gh">${esc(c.name)}</div>${g.map((i) => `<div class="row" data-n="${esc(norm(i.name))}"><div class="rn"><div class="nm">${esc(i.name)}</div><div class="small mut">в учёте: ${i.stock} ${esc(i.unit)}</div></div><input class="inp cnt" data-id="${i.id}" data-was="${i.stock}" type="number" inputmode="numeric" min="0" placeholder="факт" style="width:92px"><span class="small diff" style="min-width:44px;text-align:right"></span></div>`).join('')}</div>`;
   });
   h += `<button class="btn" data-act="count-save">Сохранить результаты</button>`;
   pane(h);
@@ -506,11 +546,11 @@ function paneCount() {
 
 /* позиции */
 function paneItems() {
-  let h = `<div class="rowx" style="margin-bottom:12px"><button class="btn" data-act="item-new">+ Новая позиция</button><button class="btn alt" data-act="cat-new">+ Категория</button><button class="btn alt" data-act="import">Загрузить списком</button></div>`;
+  let h = `<div class="rowx" style="margin-bottom:12px"><button class="btn" data-act="item-new">+ Новая позиция</button><button class="btn alt" data-act="cat-new">+ Категория</button><button class="btn alt" data-act="import">Загрузить списком</button></div><input class="search" data-filter="1" placeholder="Поиск по названию" autocomplete="off">`;
   S.cats.forEach((c) => {
     const g = S.items.filter((i) => i.category_id === c.id);
     h += `<div class="list" style="margin-bottom:12px"><div class="gh rowx"><span class="grow">${esc(c.name)}</span><button class="linkbtn" data-act="cat-edit" data-id="${c.id}">переименовать</button></div>` +
-      (g.length ? g.map((i) => `<div class="row ${i.active ? '' : 'dim'}"><div class="rn"><div class="nm">${esc(i.name)}</div><div class="small mut">${i.stock} ${esc(i.unit)} · ${i.min_qty == null ? 'без минимума' : 'минимум ' + i.min_qty}${i.active ? '' : ' · скрыта'}</div></div><button class="btn sm alt" data-act="item-edit" data-id="${i.id}">Изменить</button></div>`).join('') : `<div class="empty">Пока нет позиций</div>`) + `</div>`;
+      (g.length ? g.map((i) => `<div class="row ${i.active ? '' : 'dim'}" data-n="${esc(norm(i.name))}"><div class="rn"><div class="nm">${esc(i.name)}</div><div class="small mut">${i.stock} ${esc(i.unit)} · ${i.min_qty == null ? 'без минимума' : 'минимум ' + i.min_qty}${i.active ? '' : ' · скрыта'}</div></div><button class="btn sm alt" data-act="item-edit" data-id="${i.id}">Изменить</button></div>`).join('') : `<div class="empty">Пока нет позиций</div>`) + `</div>`;
   });
   pane(h);
 }
@@ -537,12 +577,51 @@ async function paneStaff() {
 }
 
 /* история */
+const mskOf = (d) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Moscow' }).format(d);
+const KIND_TXT = { take: 'расход', receive: 'приход', adjust: 'инвентаризация', initial: 'начальный остаток' };
+let JR = { rows: [], from: '', to: '', q: '', who: '', kind: 'take' };
+const whoOf = (m) => (m.staff ? m.staff.name : m.entered_by_admin ? 'админ' : '—');
+async function loadJournal() {
+  const next = mskOf(new Date(new Date(JR.to + 'T12:00:00+03:00').getTime() + 86400000));
+  const enc = (v) => encodeURIComponent(v);
+  JR.rows = await get('movements?select=id,kind,delta,note,occurred_at,cancelled_at,cancelled_by,entered_by_admin,items(name,unit),staff(name)' +
+    `&occurred_at=gte.${enc(JR.from + 'T00:00:00+03:00')}&occurred_at=lt.${enc(next + 'T00:00:00+03:00')}&order=occurred_at.desc&limit=3000`);
+}
 async function paneHistory() {
-  const mv = await get('movements?select=id,kind,delta,note,occurred_at,created_at,cancelled_at,cancelled_by,entered_by_admin,items(name,unit),staff(name)&order=created_at.desc&limit=150');
-  const kindTxt = { take: 'расход', receive: 'приход', adjust: 'инвентаризация', initial: 'начальный остаток' };
-  let h = `<div class="rowx" style="margin-bottom:12px"><button class="btn alt" data-act="logtake">+ Добавить забытый расход</button></div><div class="list">` +
-    (mv.length ? mv.map((m) => `<div class="row ${m.cancelled_at ? 'dim' : ''}"><div class="rn"><div class="nm">${esc(m.items ? m.items.name : '')}</div><div class="small mut">${when(m.occurred_at)} · ${kindTxt[m.kind] || m.kind}${m.staff ? ' · ' + esc(m.staff.name) : m.entered_by_admin ? ' · админ' : ''}${m.note && m.kind !== 'take' ? ' · ' + esc(m.note) : ''}${m.cancelled_at ? ' · отменено (' + esc(m.cancelled_by) + ')' : ''}</div></div><b style="color:${m.delta < 0 ? 'var(--bad)' : 'var(--ok)'}">${m.delta > 0 ? '+' : ''}${m.delta}</b>${m.cancelled_at ? '' : `<button class="btn sm ghost" data-act="mv-cancel" data-id="${m.id}">Отменить</button>`}</div>`).join('') : `<div class="empty">История пуста</div>`) + `</div>`;
-  pane(h);
+  if (!JR.from) { JR.to = mskDate(); JR.from = mskOf(new Date(Date.now() - 30 * 86400000)); }
+  await loadJournal();
+  pane(`<div class="card"><h3>Журнал: кто, что и когда</h3>
+    <label class="field"><span>Название материала</span><input class="inp" id="jr-q" value="${esc(JR.q)}" placeholder="Начните вводить название" autocomplete="off"></label>
+    <div class="rowx"><label class="field grow"><span>С даты</span><input class="inp" type="date" id="jr-from" value="${JR.from}"></label><label class="field grow"><span>По дату</span><input class="inp" type="date" id="jr-to" value="${JR.to}"></label></div>
+    <div class="rowx"><label class="field grow"><span>Сотрудник</span><select class="inp" id="jr-who"></select></label>
+    <label class="field grow"><span>Тип записи</span><select class="inp" id="jr-kind"><option value="take" ${JR.kind === 'take' ? 'selected' : ''}>Только расход</option><option value="" ${JR.kind === '' ? 'selected' : ''}>Все движения</option></select></label></div>
+    <div class="rowx"><button class="btn alt sm" data-act="logtake">+ Забытый расход</button><button class="btn alt sm" data-act="csv-jr">Скачать Excel (CSV)</button></div></div>
+    <div id="jr-info" class="small mut" style="margin:0 0 8px"></div><div id="jr-list"></div>`);
+  drawJournal(true);
+}
+function drawJournal(rebuildWho) {
+  const names = [...new Set(JR.rows.map(whoOf))].sort((a, b) => a.localeCompare(b, 'ru'));
+  if (rebuildWho) {
+    if (JR.who && !names.includes(JR.who)) JR.who = '';
+    const sel = $('#jr-who'); if (sel) sel.innerHTML = `<option value="">Все</option>` + names.map((n) => `<option value="${esc(n)}" ${JR.who === n ? 'selected' : ''}>${esc(n)}</option>`).join('');
+  }
+  const rows = journalFiltered();
+  const info = $('#jr-info'), el = $('#jr-list'); if (!el) return;
+  info.textContent = `Найдено записей: ${rows.length}` + (JR.rows.length >= 3000 ? ' (показаны последние 3000 — сузьте даты)' : '');
+  if (!rows.length) { el.innerHTML = `<div class="card empty">Ничего не найдено</div>`; return; }
+  let out = '', day = '';
+  rows.forEach((m) => {
+    const dl = new Date(m.occurred_at).toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow', weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
+    if (dl !== day) { if (day) out += '</div>'; out += `<div class="list" style="margin-bottom:12px"><div class="gh">${dl}</div>`; day = dl; }
+    const tm = new Date(m.occurred_at).toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' });
+    out += `<div class="row ${m.cancelled_at ? 'dim' : ''}"><div class="rn"><div class="nm">${esc(m.items ? m.items.name : '')}</div><div class="small mut">${tm} · <b>${esc(whoOf(m))}</b>${m.kind !== 'take' ? ' · ' + (KIND_TXT[m.kind] || m.kind) : ''}${m.note && m.kind !== 'take' ? ' · ' + esc(m.note) : ''}${m.cancelled_at ? ' · отменено (' + esc(m.cancelled_by) + ')' : ''}</div></div>` +
+      `<b style="color:${m.delta < 0 ? 'var(--bad)' : 'var(--ok)'}">${m.delta > 0 ? '+' : ''}${m.delta} <small class="mut" style="font-weight:500">${esc(m.items ? m.items.unit : '')}</small></b>${m.cancelled_at ? '' : `<button class="btn sm ghost" data-act="mv-cancel" data-id="${m.id}">Отменить</button>`}</div>`;
+  });
+  el.innerHTML = out + '</div>';
+}
+function journalFiltered() {
+  const toks = norm(JR.q).trim().split(/\s+/).filter(Boolean);
+  return JR.rows.filter((m) => (!JR.kind || m.kind === JR.kind) && (!JR.who || whoOf(m) === JR.who) && (!toks.length || toks.every((t) => norm(m.items ? m.items.name : '').includes(t))));
 }
 
 /* данные */
@@ -647,11 +726,11 @@ function orderSheet(preItem) {
     <label class="field"><span>Комментарий (необязательно)</span><input class="inp" id="o-note" maxlength="160" placeholder="Например: нужно к следующему приёму"></label>
     <div class="banner warn small" style="margin:0 0 4px">Не записывайте имена и данные пациентов.</div>
     <div class="acts"><button class="btn" data-act="ordersave">Добавить</button></div>`);
-  if (preItem) $('#o-sel').value = String(preItem);
+  if (preItem) setCombo('o-sel', preItem);
 }
 async function orderSave() {
   const isNew = !$('#o-new').classList.contains('hide');
-  const itemId = isNew ? null : +val('o-sel') || null; const name = val('o-name').trim();
+  const itemId = isNew ? null : comboVal('o-sel') || null; const name = val('o-name').trim();
   if (!itemId && !name) { toast('Выберите позицию или впишите название', { bad: true }); return; }
   const r = await guard(() => rpc('add_order', { p_token: tok(), p_item_id: itemId, p_free_name: isNew ? name : null, p_doctor: val('o-doc'), p_note: val('o-note') }));
   if (!r) return;
@@ -674,8 +753,8 @@ function orderText() {
 }
 function recvQty(entryId, itemId) {
   const it = itemById(+itemId);
-  sheet(`<h3>Получено: ${esc(it ? it.name : 'позиция')}</h3>${it ? `<label class="field"><span>Сколько привезли (${esc(it.unit)})</span><input class="inp" id="rq" type="number" inputmode="numeric" min="1"></label>` : `<p class="mut">Позиции нет на складе. Сначала добавьте её в «Управление → Позиции», затем оформите приход.</p>`}
-    <div class="acts">${it ? `<button class="btn" data-act="recvgo" data-id="${entryId}" data-item="${itemId}">Принять на склад</button>` : `<button class="btn" data-act="recvfree" data-id="${entryId}">Отметить как полученное</button>`}</div>`);
+  sheet(`<h3>Получено: ${esc(it ? it.name : 'позиция')}</h3>${it ? `<label class="field"><span>Сколько привезли (${esc(it.unit)})</span><input class="inp" id="rq" type="number" inputmode="numeric" min="0" placeholder="0 или пусто — только отметить"></label><p class="small mut">Если эту позицию вы уже добавили на склад вручную, оставьте поле пустым или впишите 0 — остаток не изменится.</p>` : `<p class="mut">Позиции нет на складе. Сначала добавьте её в «Управление → Позиции», затем оформите приход.</p>`}
+    <div class="acts">${it ? `<button class="btn" data-act="recvgo" data-id="${entryId}" data-item="${itemId}">Подтвердить получение</button>` : `<button class="btn" data-act="recvfree" data-id="${entryId}">Отметить как полученное</button>`}</div>`);
 }
 
 /* ---------- импорт ---------- */
@@ -693,6 +772,7 @@ function parseImport(t) {
 
 /* ============================ обработчик кликов ============================ */
 document.addEventListener('click', async (e) => {
+  if (!e.target.closest('.combo')) document.querySelectorAll('.sugg').forEach((x) => x.classList.add('hide'));
   const t = e.target.closest('[data-act]'); if (!t) return;
   const a = t.dataset.act; const d = t.dataset;
   const refreshList = () => { const l = $('#list'); if (l) l.innerHTML = listHTML(); renderBasket(); };
@@ -729,7 +809,11 @@ document.addEventListener('click', async (e) => {
     case 'ocancel': { const r = await guard(() => rpc('admin_order_set', { p_id: +d.id, p_status: 'cancelled' })); if (r) await loadData(true); break; }
     case 'oback': { const r = await guard(() => rpc('admin_order_set', { p_id: +d.id, p_status: 'open' })); if (r) await loadData(true); break; }
     case 'oreceive': recvQty(d.id, d.item); break;
-    case 'recvgo': { const q = parseInt(val('rq'), 10); if (!q || q < 1) { toast('Введите количество', { bad: true }); break; } const r = await guard(() => rpc('admin_receive', { p_items: [{ item_id: +d.item, qty: q }] })); if (r) { closeSheet(); toast('Принято на склад'); await loadData(true); } break; }
+    case 'recvgo': {
+      const q = parseInt(val('rq'), 10) || 0; if (q < 0) { toast('Количество не может быть отрицательным', { bad: true }); break; }
+      const r = await guard(() => q > 0 ? rpc('admin_receive', { p_items: [{ item_id: +d.item, qty: q }] }) : rpc('admin_order_set', { p_id: +d.id, p_status: 'received' }));
+      if (r) { closeSheet(); toast(q > 0 ? 'Принято на склад: +' + q : 'Отмечено как полученное'); await loadData(true); } break;
+    }
     case 'recvfree': { const r = await guard(() => rpc('admin_order_set', { p_id: +d.id, p_status: 'received' })); if (r) { closeSheet(); await loadData(true); } break; }
     /* админ */
     case 'atab': S.atab = d.k; render(); break;
@@ -741,8 +825,10 @@ document.addEventListener('click', async (e) => {
     case 'csv-stock': csvDownload('ostatki_' + mskDate() + '.csv', [['Категория', 'Позиция', 'Ед.', 'Остаток', 'Минимум']].concat(S.items.filter((i) => i.active).map((i) => [(catById(i.category_id) || {}).name, i.name, i.unit, i.stock, i.min_qty ?? '']))); break;
     case 'csv-mv': { const mv = await guard(() => get('movements?select=occurred_at,kind,delta,note,cancelled_at,items(name,unit),staff(name)&order=occurred_at.desc&limit=5000'));
       if (mv) csvDownload('dvizhenie_' + mskDate() + '.csv', [['Дата', 'Тип', 'Позиция', 'Ед.', 'Кол-во', 'Кто', 'Примечание', 'Отменено']].concat(mv.map((m) => [when(m.occurred_at), m.kind, m.items && m.items.name, m.items && m.items.unit, m.delta, m.staff ? m.staff.name : 'админ', m.note || '', m.cancelled_at ? 'да' : '']))); break; }
-    case 'recv-plus': { const id = +val('rsel'), q = parseInt(val('rqty'), 10); if (!id || !q || q < 1) { toast('Выберите позицию и количество', { bad: true }); break; } S.recvList.push({ item_id: id, qty: q }); $('#rqty').value = ''; drawRecv(); break; }
-    case 'recv-add': { $('#rsel').value = d.item; $('#rqty').focus(); break; }
+    case 'recv-plus': { const id = comboVal('rsel'), q = parseInt(val('rqty'), 10); if (!id || !q || q < 1) { toast('Выберите позицию из списка и введите количество', { bad: true }); break; } S.recvList.push({ item_id: id, qty: q }); $('#rqty').value = ''; setCombo('rsel', null); drawRecv(); break; }
+    case 'recv-add': { setCombo('rsel', d.item); $('#rqty').focus(); break; }
+    case 'combopick': { setCombo(d.cid, d.item); const nx = { rsel: 'rqty', 'lt-sel': 'lt-qty' }[d.cid]; if (nx) $('#' + nx).focus(); break; }
+    case 'csv-jr': { const rows = journalFiltered(); csvDownload('zhurnal_' + mskDate() + '.csv', [['Дата', 'Время', 'Сотрудник', 'Позиция', 'Ед.', 'Кол-во', 'Тип', 'Примечание', 'Отменено']].concat(rows.map((m) => [new Date(m.occurred_at).toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' }), new Date(m.occurred_at).toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' }), whoOf(m), m.items && m.items.name, m.items && m.items.unit, m.delta, KIND_TXT[m.kind] || m.kind, m.note || '', m.cancelled_at ? 'да' : '']))); break; }
     case 'recv-del': S.recvList.splice(+d.n, 1); drawRecv(); break;
     case 'recv-save': { const r = await guard(() => rpc('admin_receive', { p_items: S.recvList })); if (r) { S.recvList = []; toast('Принято на склад'); await loadData(true); } break; }
     case 'count-save': {
@@ -783,7 +869,7 @@ document.addEventListener('click', async (e) => {
     case 'staff-toggle': { const r = await guard(() => rpc('admin_staff_set_active', { p_id: +d.id, p_active: d.on === '1' })); if (r && r.ok === false) toast('Активный сотрудник с таким именем уже есть', { bad: true }); showAdmin(); break; }
     case 'mv-cancel': { const r = await guard(() => rpc('cancel_movements', { p_token: null, p_ids: [+d.id] })); if (r) { toast('Запись отменена'); await loadData(true); } break; }
     case 'logtake': logTakeSheet(); break;
-    case 'lt-add': { const id = +val('lt-sel'), q = parseInt(val('lt-qty'), 10); if (!id || !q) break; S.logList.push({ item_id: id, qty: q }); drawLog(); break; }
+    case 'lt-add': { const id = comboVal('lt-sel'), q = parseInt(val('lt-qty'), 10); if (!id || !q) { toast('Выберите позицию из списка и введите количество', { bad: true }); break; } S.logList.push({ item_id: id, qty: q }); $('#lt-qty').value = ''; setCombo('lt-sel', null); drawLog(); break; }
     case 'lt-del': S.logList.splice(+d.n, 1); drawLog(); break;
     case 'lt-go': {
       if (!S.logList.length) { toast('Добавьте хотя бы одну позицию', { bad: true }); break; }
@@ -810,8 +896,24 @@ function drawLog() {
   const el = $('#lt-list'); if (!el) return;
   el.innerHTML = S.logList.map((x, n) => { const it = itemById(x.item_id); return `<div class="rowx small" style="margin-bottom:4px"><span class="grow">${esc(it ? it.name : '')} — ${x.qty} ${esc(it ? it.unit : '')}</span><button class="btn sm ghost" data-act="lt-del" data-n="${n}">×</button></div>`; }).join('');
 }
+document.addEventListener('focusin', (e) => { if (e.target.dataset && e.target.dataset.combo) comboShow(e.target.dataset.combo); });
+document.addEventListener('change', async (e) => {
+  const id = e.target.id;
+  if (id === 'jr-from' || id === 'jr-to') {
+    JR.from = val('jr-from') || JR.from; JR.to = val('jr-to') || JR.to;
+    if (JR.from > JR.to) { const x = JR.from; JR.from = JR.to; JR.to = x; $('#jr-from').value = JR.from; $('#jr-to').value = JR.to; }
+    await guard(async () => { await loadJournal(); drawJournal(true); });
+  } else if (id === 'jr-who') { JR.who = e.target.value; drawJournal(false); }
+  else if (id === 'jr-kind') { JR.kind = e.target.value; drawJournal(false); }
+});
 document.addEventListener('input', (e) => {
-  if (e.target.id === 'q') { S.q = e.target.value; const l = $('#list'); if (l) l.innerHTML = listHTML(); }
+  if (e.target.dataset && e.target.dataset.combo) { const id = e.target.dataset.combo; const h = $('#' + id); if (h) h.value = ''; comboShow(id); }
+  else if (e.target.id === 'jr-q') { JR.q = e.target.value; drawJournal(false); }
+  else if (e.target.dataset && e.target.dataset.filter) {
+    const toks = norm(e.target.value).trim().split(/\s+/).filter(Boolean);
+    document.querySelectorAll('#apane .row[data-n]').forEach((r) => r.classList.toggle('hide', !toks.every((t) => r.dataset.n.includes(t))));
+  }
+  else if (e.target.id === 'q') { S.q = e.target.value; const l = $('#list'); if (l) l.innerHTML = listHTML(); }
   else if (e.target.id === 'imp') { const n = parseImport(e.target.value).length; $('#imp-prev').textContent = n ? `Распознано позиций: ${n}` : ''; }
   else if (e.target.classList && e.target.classList.contains('cnt')) {
     const was = +e.target.dataset.was, v = e.target.value === '' ? null : parseInt(e.target.value, 10); const out = e.target.parentElement.querySelector('.diff');
