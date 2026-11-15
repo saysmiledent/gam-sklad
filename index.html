@@ -520,6 +520,48 @@ function comboVal(id) {
   if (exact) return exact.id;
   return res.length === 1 ? res[0].id : 0;
 }
+const simKey = (x) => norm(x).replace(/[^a-zа-я0-9]+/g, '');
+const SIM_STOP = ['для', 'на', 'по', 'из', 'при', 'или', 'от'];
+const simToks = (x) => norm(x).split(/[^a-zа-я0-9]+/).filter((t) => t.length > 1 && !SIM_STOP.includes(t));
+const stemSet = (x) => [...new Set(simToks(x).map((t) => (/\d/.test(t) ? t : t.slice(0, 4))))].sort().join('|');
+function findSimilar(name, excludeId) {
+  const k = simKey(name); if (k.length < 3) return [];
+  const t1 = simToks(name);
+  return S.items.filter((i) => {
+    if (i.id === excludeId) return false;
+    const k2 = simKey(i.name);
+    if (k === k2) return true;
+    const lo = Math.min(k.length, k2.length), hi = Math.max(k.length, k2.length);
+    if (lo >= 5 && lo / hi >= 0.7 && (k.includes(k2) || k2.includes(k))) return true;
+    if (t1.length >= 2 && stemSet(name) === stemSet(i.name)) return true;
+    return false;
+  });
+}
+const dupRows = (list) => `<div class="list" style="margin:8px 0 4px">${list.map((i) => `<div class="row"><div class="rn"><div class="nm">${esc(i.name)}</div><div class="small mut">${esc((catById(i.category_id) || {}).name || '')} · ${i.stock} ${esc(i.unit)}${i.active ? '' : ' · скрыта'}</div></div><button class="btn sm alt" data-act="item-edit" data-id="${i.id}">Изменить</button><button class="btn sm ghost" data-act="item-del" data-id="${i.id}">Удалить</button></div>`).join('')}</div>`;
+function dupSheet(list, isEdit) {
+  sheet(`<h3>Похожая позиция уже есть</h3><p class="small mut" style="margin-top:0">Проверьте, не дубль ли это. Можно исправить или удалить существующую, либо всё равно ${isEdit ? 'сохранить' : 'добавить'} новую.</p>${dupRows(list.slice(0, 5))}
+    <div class="acts"><button class="btn ghost" data-act="close">Отмена</button><button class="btn" data-act="dup-force">Всё равно ${isEdit ? 'сохранить' : 'добавить'}</button></div>`);
+}
+async function itemSaveRun(v, force) {
+  if (!force) { const sim = findSimilar(v.name, v.id || 0); if (sim.length) { S.pend = v; dupSheet(sim, !!v.id); return; } }
+  let r;
+  if (!v.id) {
+    const c = catById(v.cat);
+    r = await guard(() => rpc('admin_import_items', { p_rows: [{ category: c.name, name: v.name, unit: v.unit, qty: String(v.qty || 0), min: v.minv == null ? '' : String(v.minv) }] }));
+    if (r && !r.created) { toast('Такая позиция уже есть в этой категории', { bad: true }); return; }
+  } else {
+    r = await guard(() => rpc('admin_save_item', { p_id: v.id, p_category_id: v.cat, p_name: v.name, p_unit: v.unit, p_min: v.minv, p_active: v.active }));
+    if (r && r.ok === false) { toast('Такая позиция уже есть в этой категории', { bad: true }); return; }
+    const it = itemById(v.id);
+    if (r && v.stock != null && !isNaN(v.stock) && it && v.stock !== it.stock) r = await guard(() => rpc('admin_correct_stock', { p_id: v.id, p_stock: v.stock }));
+  }
+  if (r && r.ok !== false) { closeSheet(); toast('Сохранено'); await loadData(true); }
+}
+function delSheet(id) {
+  const it = itemById(+id); if (!it) return;
+  sheet(`<h3>Удалить позицию?</h3><div class="card" style="margin:0 0 8px"><div class="nm">${esc(it.name)}</div><div class="small mut">${esc((catById(it.category_id) || {}).name || '')} · на складе: ${it.stock} ${esc(it.unit)}</div></div><p class="small mut" style="margin:0">Позиция исчезнет из списка вместе с её начальными остатками и записями прихода. Отменить это нельзя.</p>
+    <div class="acts"><button class="btn ghost" data-act="close">Отмена</button><button class="btn bad" data-act="item-del-go" data-id="${it.id}">Удалить</button></div>`);
+}
 function paneReceive() {
   const ordered = ((S.ov && S.ov.entries) || []).filter((e) => e.status === 'ordered' && e.item_id);
   pane(`<div class="card"><h3>Поступление товара</h3><p class="small mut" style="margin-top:0">Добавьте то, что привезли. Остаток увеличится, а позиции исчезнут из списка «Заказано».</p>
@@ -561,8 +603,8 @@ function itemForm(it) {
     <label class="field"><span>Название</span><input class="inp" id="f-name" value="${esc(it ? it.name : '')}" maxlength="120"></label>
     <label class="field"><span>Единица счёта</span><input class="inp" id="f-unit" list="units" value="${esc(it ? it.unit : 'шт')}" maxlength="20"><datalist id="units">${UNITS.map((u) => `<option value="${u}">`).join('')}</datalist></label>
     <label class="field"><span>Минимум (оставьте пустым, если не нужен)</span><input class="inp" id="f-min" type="number" inputmode="numeric" min="0" value="${it && it.min_qty != null ? it.min_qty : ''}"></label>
-    ${n ? `<label class="field"><span>Сейчас на складе</span><input class="inp" id="f-qty" type="number" inputmode="numeric" min="0" value="0"></label>` : `<label class="chk"><input type="checkbox" id="f-act" ${it.active ? 'checked' : ''}> Показывать в списке</label>`}
-    <div class="acts"><button class="btn" data-act="item-save" data-id="${it ? it.id : ''}">Сохранить</button></div>`);
+    ${n ? `<label class="field"><span>Сейчас на складе</span><input class="inp" id="f-qty" type="number" inputmode="numeric" min="0" value="0"></label>` : `<label class="field"><span>Остаток на складе</span><input class="inp" id="f-stock" type="number" inputmode="numeric" min="0" value="${it.stock}"><small class="mut">Исправление не считается расходом. Для обычного пересчёта пользуйтесь вкладкой «Инвентаризация».</small></label><label class="chk"><input type="checkbox" id="f-act" ${it.active ? 'checked' : ''}> Показывать в списке</label>`}
+    <div class="acts"><button class="btn" data-act="item-save" data-id="${it ? it.id : ''}">Сохранить</button>${n ? '' : `<button class="btn bad" data-act="item-del" data-id="${it.id}">Удалить</button>`}</div>`);
 }
 
 /* сотрудники */
@@ -731,8 +773,20 @@ function orderSheet(preItem) {
 async function orderSave() {
   const isNew = !$('#o-new').classList.contains('hide');
   const itemId = isNew ? null : comboVal('o-sel') || null; const name = val('o-name').trim();
-  if (!itemId && !name) { toast('Выберите позицию или впишите название', { bad: true }); return; }
-  const r = await guard(() => rpc('add_order', { p_token: tok(), p_item_id: itemId, p_free_name: isNew ? name : null, p_doctor: val('o-doc'), p_note: val('o-note') }));
+  if (!itemId && !name) { toast('Выберите позицию из списка или впишите название', { bad: true }); return; }
+  if (isNew) {
+    const sim = findSimilar(name, 0).filter((i) => i.active);
+    if (sim.length) {
+      S.opend = { name, doc: val('o-doc'), note: val('o-note') };
+      sheet(`<h3>Такая позиция уже есть на складе</h3><p class="small mut" style="margin-top:0">Возможно, это она. Выберите, что добавить в заказ:</p><div class="list">${sim.slice(0, 4).map((i) => `<div class="row"><div class="rn"><div class="nm">${esc(i.name)}</div><div class="small mut">на складе: ${i.stock} ${esc(i.unit)}</div></div><button class="btn sm" data-act="od-use" data-item="${i.id}">Заказать эту</button></div>`).join('')}</div>
+        <div class="acts"><button class="btn ghost" data-act="close">Отмена</button><button class="btn alt" data-act="od-force">Нет, это новая: «${esc(name)}»</button></div>`);
+      return;
+    }
+  }
+  await orderSaveRun(itemId, isNew ? name : null, val('o-doc'), val('o-note'));
+}
+async function orderSaveRun(itemId, freeName, doc, note) {
+  const r = await guard(() => rpc('add_order', { p_token: tok(), p_item_id: itemId, p_free_name: freeName, p_doctor: doc, p_note: note }));
   if (!r) return;
   if (r.ok) { closeSheet(); toast('Добавлено в список заказа'); await loadData(true); } else toast('Эта позиция уже в списке заказа', { bad: true });
 }
@@ -762,6 +816,7 @@ function importSheet() {
   sheet(`<h3>Загрузить список позиций</h3><p class="small mut" style="margin-top:0">Одна строка — одна позиция. Поля через «;» или Tab (можно вставить из Excel):<br><b>Категория; Название; Единица; Количество; Минимум</b><br>Минимум можно не писать. Примеры категорий: Терапия, Ортодонтия, Ортопедия, Хирургия, Общее, Расходники.</p>
     <textarea class="inp" id="imp" placeholder="Расходники; Перчатки нитриловые M; упаковка; 6; 2&#10;Терапия; Аппликаторы; упаковка; 1&#10;Хирургия; Шовный материал 4-0; шт; 12; 5"></textarea>
     <div id="imp-prev" class="small mut" style="margin-top:6px"></div><div class="acts"><button class="btn" data-act="impgo">Загрузить</button></div>`);
+  S.impOk = false;
 }
 function parseImport(t) {
   return t.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).map((l) => {
@@ -843,14 +898,24 @@ document.addEventListener('click', async (e) => {
     case 'item-new': itemForm(null); break;
     case 'item-edit': itemForm(itemById(+d.id)); break;
     case 'item-save': {
-      const cat = +val('f-cat'), name = val('f-name').trim(), unit = val('f-unit').trim() || 'шт', minv = val('f-min').trim() === '' ? null : parseInt(val('f-min'), 10);
-      if (!name) { toast('Введите название', { bad: true }); break; }
-      let r;
-      if (!d.id) { const c = catById(cat); r = await guard(() => rpc('admin_import_items', { p_rows: [{ category: c.name, name, unit, qty: String(parseInt(val('f-qty'), 10) || 0), min: minv == null ? '' : String(minv) }] })); if (r && !r.created) { toast('Такая позиция уже есть в этой категории', { bad: true }); break; } }
-      else r = await guard(() => rpc('admin_save_item', { p_id: +d.id, p_category_id: cat, p_name: name, p_unit: unit, p_min: minv, p_active: $('#f-act').checked }));
-      if (r && r.ok !== false) { closeSheet(); toast('Сохранено'); await loadData(true); } else if (r) toast('Такая позиция уже есть', { bad: true });
+      const v = { id: d.id ? +d.id : 0, cat: +val('f-cat'), name: val('f-name').trim(), unit: val('f-unit').trim() || 'шт', minv: val('f-min').trim() === '' ? null : parseInt(val('f-min'), 10) };
+      if (!v.name) { toast('Введите название', { bad: true }); break; }
+      if (v.id) { v.active = $('#f-act').checked; v.stock = val('f-stock') === '' ? null : parseInt(val('f-stock'), 10); } else v.qty = parseInt(val('f-qty'), 10) || 0;
+      await itemSaveRun(v, false); break;
+    }
+    case 'dup-force': if (S.pend) await itemSaveRun(S.pend, true); break;
+    case 'item-del': delSheet(d.id); break;
+    case 'item-del-go': {
+      const r = await guard(() => rpc('admin_delete_item', { p_id: +d.id }));
+      if (!r) break;
+      if (r.ok) { closeSheet(); toast('Позиция удалена'); await loadData(true); }
+      else if (r.error === 'HAS_TAKES') sheet(`<h3>Удалить нельзя</h3><p>По этой позиции уже есть записи расхода ассистентов — они нужны для статистики и журнала.</p><p class="small mut">Можно скрыть позицию: она пропадёт из списков, а история сохранится.</p><div class="acts"><button class="btn ghost" data-act="close">Отмена</button><button class="btn" data-act="item-hide" data-id="${d.id}">Скрыть позицию</button></div>`);
+      else toast('Позиция не найдена', { bad: true });
       break;
     }
+    case 'item-hide': { const it = itemById(+d.id); if (!it) break; const r = await guard(() => rpc('admin_save_item', { p_id: it.id, p_category_id: it.category_id, p_name: it.name, p_unit: it.unit, p_min: it.min_qty, p_active: false })); if (r) { closeSheet(); toast('Позиция скрыта'); await loadData(true); } break; }
+    case 'od-use': { const dd = S.opend; if (!dd) break; await orderSaveRun(+d.item, null, dd.doc, dd.note); break; }
+    case 'od-force': { const dd = S.opend; if (!dd) break; await orderSaveRun(null, dd.name, dd.doc, dd.note); break; }
     case 'cat-new': case 'cat-edit': {
       const c = a === 'cat-edit' ? catById(+d.id) : null;
       sheet(`<h3>${c ? 'Переименовать категорию' : 'Новая категория'}</h3><label class="field"><span>Название</span><input class="inp" id="c-name" value="${esc(c ? c.name : '')}" maxlength="40"></label><div class="acts"><button class="btn" data-act="cat-save" data-id="${c ? c.id : ''}">Сохранить</button></div>`); break;
@@ -859,6 +924,16 @@ document.addEventListener('click', async (e) => {
     case 'import': importSheet(); break;
     case 'impgo': {
       const rows = parseImport(val('imp')); if (!rows.length) { toast('Не нашёл ни одной строки', { bad: true }); break; }
+      if (!S.impOk) {
+        const warn = [];
+        rows.forEach((x, n) => {
+          const same = S.items.find((i) => simKey(i.name) === simKey(x.name) && norm((catById(i.category_id) || {}).name) === norm(x.category));
+          if (same) return; // точные повторы сервер просто пропустит
+          const sim = findSimilar(x.name, 0); if (sim.length) warn.push(`«${esc(x.name)}» похожа на «${esc(sim[0].name)}» (${sim[0].stock} ${esc(sim[0].unit)})`);
+          else { const dup = rows.slice(0, n).find((y) => simKey(y.name) === simKey(x.name)); if (dup) warn.push(`«${esc(x.name)}» повторяется в вашем списке`); }
+        });
+        if (warn.length) { S.impOk = true; $('#imp-prev').innerHTML = `<div class="banner warn" style="display:block"><b>Возможные дубли (${warn.length}):</b><br>${warn.slice(0, 12).join('<br>')}${warn.length > 12 ? '<br>…' : ''}<br><span class="small">Исправьте список или нажмите «Всё равно загрузить».</span></div>`; t.textContent = 'Всё равно загрузить'; break; }
+      }
       const r = await guard(() => rpc('admin_import_items', { p_rows: rows.map((x) => ({ category: x.category, name: x.name, unit: x.unit, qty: String(x.qty || 0), min: x.min == null || isNaN(x.min) ? '' : String(x.min) })) }));
       if (r) { closeSheet(); toast(`Добавлено: ${r.created}, пропущено (уже есть): ${r.skipped}`, { ms: 7000 }); await loadData(true); } break;
     }
@@ -914,7 +989,7 @@ document.addEventListener('input', (e) => {
     document.querySelectorAll('#apane .row[data-n]').forEach((r) => r.classList.toggle('hide', !toks.every((t) => r.dataset.n.includes(t))));
   }
   else if (e.target.id === 'q') { S.q = e.target.value; const l = $('#list'); if (l) l.innerHTML = listHTML(); }
-  else if (e.target.id === 'imp') { const n = parseImport(e.target.value).length; $('#imp-prev').textContent = n ? `Распознано позиций: ${n}` : ''; }
+  else if (e.target.id === 'imp') { S.impOk = false; const g = $('[data-act=impgo]'); if (g) g.textContent = 'Загрузить'; const n = parseImport(e.target.value).length; $('#imp-prev').textContent = n ? `Распознано позиций: ${n}` : ''; }
   else if (e.target.classList && e.target.classList.contains('cnt')) {
     const was = +e.target.dataset.was, v = e.target.value === '' ? null : parseInt(e.target.value, 10); const out = e.target.parentElement.querySelector('.diff');
     if (v == null || isNaN(v)) out.textContent = ''; else { const df = v - was; out.textContent = df === 0 ? '✓' : (df > 0 ? '+' : '') + df; out.style.color = df < 0 ? 'var(--bad)' : df > 0 ? 'var(--ok)' : 'var(--mut)'; }

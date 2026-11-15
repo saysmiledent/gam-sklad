@@ -1,5 +1,5 @@
 // Оболочка приложения кэшируется, данные (Supabase) всегда берутся из сети.
-const CACHE = 'gam-sklad-v2';
+const CACHE = 'gam-sklad-v3';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', (e) => {
