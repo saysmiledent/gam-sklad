@@ -320,7 +320,8 @@ const WORK = ['Коронка', 'Коронка на имплантате', 'М�
 const SYSTEMS = ['Straumann NC', 'Straumann RC', 'Medentika Universal', 'Другая'];
 const SYS_SHORT = { 'Straumann NC': 'NC', 'Straumann RC': 'RC', 'Medentika Universal': 'Medentika', 'Другая': 'Другая', pontic: 'Без имплантата' };
 const BRANDS = [['straumann', 'Straumann'], ['medentika', 'Medentika'], ['3shape', '3Shape']];
-const logo = (k) => (S.boot && S.boot.brands && S.boot.brands[k]) || null;
+const LOGO_FILES = { straumann: 'logos/straumann.png', medentika: 'logos/medentika.png', '3shape': 'logos/3shape.png' };
+const logo = (k) => (k && ((S.boot && S.boot.brands && S.boot.brands[k]) || LOGO_FILES[k])) || null;
 const brandKey = (sys) => (/straumann/i.test(sys || '') ? 'straumann' : /medentika/i.test(sys || '') ? 'medentika' : null);
 function sysLabel(sys) { const k = brandKey(sys), l = k && logo(k); return l ? `<img class="blogo" src="${esc(l)}" alt="${esc(sys)}">${esc(sys.replace(/straumann|medentika|universal/ig, '').trim())}` : esc(sys.replace('Universal', '').trim()); }
 const scanLabel = () => (logo('3shape') ? `Скан · <img class="blogo" src="${esc(logo('3shape'))}" alt="3Shape">` : 'Скан · 3Shape');
@@ -1057,7 +1058,7 @@ async function renderSettings() {
     pane(head + `<div class="card"><h3>Логотипы производителей</h3>
       <div class="small mut" style="margin-bottom:8px">Загрузите официальные логотипы (SVG или PNG, лучше на прозрачном фоне). Они появятся рядом с имплантатами и сканами во всех работах.</div>
       ${BRANDS.map(([k, t]) => `<div class="urow"><div class="grow"><b>${t}</b><div style="margin-top:6px">${logo(k) ? `<img src="${esc(logo(k))}" alt="${t}" style="max-height:36px;max-width:180px">` : '<span class="mut small">не загружен</span>'}</div></div>
-        <button class="btn sm alt" data-act="b-up" data-k="${k}">${logo(k) ? 'Заменить' : 'Загрузить'}</button>${logo(k) ? `<button class="btn sm ghost" data-act="b-del" data-k="${k}">Убрать</button>` : ''}</div>`).join('')}
+        <button class="btn sm alt" data-act="b-up" data-k="${k}">${logo(k) ? 'Заменить' : 'Загрузить'}</button>${S.boot.brands && S.boot.brands[k] ? `<button class="btn sm ghost" data-act="b-del" data-k="${k}">Вернуть стандартный</button>` : ''}</div>`).join('')}
       </div><input type="file" id="b-file" accept="image/svg+xml,image/png,image/jpeg,image/webp" class="hide"></div>`);
     $('#b-file').addEventListener('change', async (e) => {
       const f = e.target.files[0]; e.target.value = ''; if (!f) return;
