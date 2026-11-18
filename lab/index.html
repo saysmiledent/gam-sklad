@@ -255,6 +255,10 @@ body{background:linear-gradient(180deg,#e4eefb 0,#f1f4f8 380px,#f6f5f1 900px) fi
 .oc .ic svg{width:42px;height:42px}
 .oc .l1,.oc .fio,.oc .wk,.oc .meta{grid-column:2}
 .oc .dr{font-weight:500;color:var(--mut);font-size:13.5px}
+.blogo{height:14px;width:auto;max-width:90px;vertical-align:-2px;margin-right:3px;object-fit:contain}
+.hc .blogo{height:16px}
+.kv .blogo{height:17px}
+.blogo.lg{height:20px;max-width:140px}
 .mi{display:inline-flex;align-items:center;gap:4px;vertical-align:middle}
 .mi svg{width:18px;height:18px}
 .ichip{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 9px 1px 4px;background:color-mix(in srgb,var(--c) 12%,#fff);color:var(--c);border:1px solid color-mix(in srgb,var(--c) 30%,#fff);white-space:nowrap}
@@ -315,7 +319,12 @@ const STORAGE_LIMIT = 1073741824;
 const WORK = ['Коронка', 'Коронка на имплантате', 'Мостовидный протез', 'Мост на имплантатах', 'All-on-4', 'All-on-6', 'Балочная конструкция', 'Винир', 'Вкладка / накладка', 'Индивидуальный абатмент', 'Съёмный протез', 'Каппа / сплинт', 'Другое'];
 const SYSTEMS = ['Straumann NC', 'Straumann RC', 'Medentika Universal', 'Другая'];
 const SYS_SHORT = { 'Straumann NC': 'NC', 'Straumann RC': 'RC', 'Medentika Universal': 'Medentika', 'Другая': 'Другая', pontic: 'Без имплантата' };
-function implChips(o) { const g = implGroups(legacyMap(o)); const k = Object.keys(g); return k.length ? k.map((s) => `<span class="ichip" style="--c:${SYSC[s] || '#61707f'}">${svg(MIC.implant, 18)}${esc(s.replace('Universal', ''))} ×${g[s].length}</span>`).join('') : (o.implant_system ? `<span class="ichip" style="--c:#61707f">${svg(MIC.implant, 18)}${esc(o.implant_system)}</span>` : ''); }
+const BRANDS = [['straumann', 'Straumann'], ['medentika', 'Medentika'], ['3shape', '3Shape']];
+const logo = (k) => (S.boot && S.boot.brands && S.boot.brands[k]) || null;
+const brandKey = (sys) => (/straumann/i.test(sys || '') ? 'straumann' : /medentika/i.test(sys || '') ? 'medentika' : null);
+function sysLabel(sys) { const k = brandKey(sys), l = k && logo(k); return l ? `<img class="blogo" src="${esc(l)}" alt="${esc(sys)}">${esc(sys.replace(/straumann|medentika|universal/ig, '').trim())}` : esc(sys.replace('Universal', '').trim()); }
+const scanLabel = () => (logo('3shape') ? `Скан · <img class="blogo" src="${esc(logo('3shape'))}" alt="3Shape">` : 'Скан · 3Shape');
+function implChips(o) { const g = implGroups(legacyMap(o)); const k = Object.keys(g); return k.length ? k.map((s) => `<span class="ichip" style="--c:${SYSC[s] || '#61707f'}">${svg(MIC.implant, 18)}${sysLabel(s)} ×${g[s].length}</span>`).join('') : (o.implant_system ? `<span class="ichip" style="--c:#61707f">${svg(MIC.implant, 18)}${esc(o.implant_system)}</span>` : ''); }
 function implGroups(map) { const g = {}; Object.entries(map || {}).sort((a, b) => a[0] - b[0]).forEach(([t, v]) => { if (v && v !== 'pontic') (g[v] = g[v] || []).push(t); }); return g; }
 function implSummary(map) { return Object.entries(implGroups(map)).map(([k, v]) => `${k}: ${v.join(', ')}`).join('; '); }
 const METHODS = ['Оттиск', 'Скан'];
@@ -635,9 +644,9 @@ function renderOrder() {
   const kv = [
     ['Врач', esc(o.doctor || '—')], ...(S.boot && S.boot.labs.length > 1 ? [['Лаборатория', esc(o.lab)]] : []),
     ['Вид работы', esc(o.work_type)],
-    ...(o.implant ? [['Имплантаты', (() => { const g = implGroups(legacyMap(o)); const k = Object.keys(g); return k.length ? k.map((s) => `${esc(s)} — ${g[s].join(', ')} <span class="mut">(${g[s].length} шт)</span>`).join('<br>') : esc(o.implant_system || '—'); })()]] : []),
+    ...(o.implant ? [['Имплантаты', (() => { const g = implGroups(legacyMap(o)); const k = Object.keys(g); return k.length ? k.map((s) => `<span class="mi">${sysLabel(s)}</span> — ${g[s].join(', ')} <span class="mut">(${g[s].length} шт)</span>`).join('<br>') : esc(o.implant_system || '—'); })()]] : []),
     ...(o.implant && Object.values(o.implant_map || {}).includes('pontic') ? [['Без имплантата', Object.entries(o.implant_map).filter(([, v]) => v === 'pontic').map(([t]) => t).sort((a, b) => a - b).join(', ')]] : []),
-    ['Метод', o.method ? `<span class="mi">${methodIcon(o.method, 20)}${esc(o.method === 'Скан' ? 'Скан (3Shape)' : o.method)}</span>` : '—'],
+    ['Метод', o.method ? `<span class="mi">${methodIcon(o.method, 20)}${o.method === 'Скан' ? scanLabel() : esc(o.method)}</span>` : '—'],
     ['Тип', o.temp ? 'Временная' : 'Постоянная'], ['Материал', esc(o.material || '—')],
     ['Цвет', (o.shade ? swatch(o.shade) : '') + esc([o.shade, o.shade_note].filter(Boolean).join(' · ') || '—')],
     ['Визит пациента', o.due_date ? dmy(o.due_date) + ' (' + dmy(o.due_date, true).split('(')[1] : '—'],
@@ -650,8 +659,8 @@ function renderOrder() {
   pane(`<button class="back" data-go="">← Все работы</button>
   <div class="hero"><span class="num">${num(o.id)}</span><div class="big">${workIcon(o.work_type, o.implant)}</div>
     <div style="min-width:0;position:relative;z-index:1"><h2>${esc(o.fio)}</h2><div class="sub">${esc(o.work_type)}${o.teeth.length ? ' · зубы ' + teethTxt(o.teeth) : ''}</div>
-    <div class="hchips">${o.method ? `<span class="hc">${methodIcon(o.method)}${esc(o.method === 'Скан' ? 'Скан · 3Shape' : o.method)}</span>` : ''}
-      ${o.implant ? Object.entries(implGroups(legacyMap(o))).map(([k, v]) => `<span class="hc" style="color:${SYSC[k] || '#61707f'}">${svg(MIC.implant, 20)}${esc(k)} × ${v.length}</span>`).join('') : ''}
+    <div class="hchips">${o.method ? `<span class="hc">${methodIcon(o.method)}${o.method === 'Скан' ? scanLabel() : esc(o.method)}</span>` : ''}
+      ${o.implant ? Object.entries(implGroups(legacyMap(o))).map(([k, v]) => `<span class="hc" style="color:${SYSC[k] || '#61707f'}">${svg(MIC.implant, 20)}${sysLabel(k)} × ${v.length}</span>`).join('') : ''}
       ${o.material ? `<span class="hc">${o.temp ? '⏳ Временная' : '◆ Постоянная'} · ${esc(o.material)}</span>` : ''}
       ${o.shade ? `<span class="hc">${swatch(o.shade)}${esc(o.shade)}</span>` : ''}</div></div></div>
   ${sib}
@@ -734,7 +743,7 @@ function renderForm() {
     <div class="field"><span class="lbl">Зубы <span class="mut" id="f-tt">${teethTxt(F.teeth)}</span></span>${teethChart(F.teeth)}</div>
     <label class="chk"><input type="checkbox" id="f-impl" ${F.implant ? 'checked' : ''}> На имплантатах</label>
     <div class="field ${F.implant ? '' : 'hide'}" id="f-implbox" style="margin-top:8px">${implBox()}</div>
-    <div class="field"><span class="lbl">Метод</span><div class="chips" data-chips="method">${METHODS.map((v) => `<button type="button" data-v="${esc(v)}" aria-pressed="${F.method === v}"><span class="mi">${methodIcon(v, 20)}${v === 'Скан' ? 'Скан (3Shape)' : v}</span></button>`).join('')}</div></div>
+    <div class="field"><span class="lbl">Метод</span><div class="chips" data-chips="method">${METHODS.map((v) => `<button type="button" data-v="${esc(v)}" aria-pressed="${F.method === v}"><span class="mi">${methodIcon(v, 20)}${v === 'Скан' ? scanLabel() : v}</span></button>`).join('')}</div></div>
   </div>
   <div class="card">
     <div class="field"><span class="lbl">Тип</span><div class="chips" data-chips="temp"><button type="button" data-v="0" aria-pressed="${!F.temp}">Постоянная</button><button type="button" data-v="1" aria-pressed="${F.temp}">Временная</button></div></div>
@@ -827,7 +836,7 @@ function renderSend() {
     ${purposes.length > 1 ? `<div class="field"><span class="lbl">Цель</span><div class="chips">${purposes.map((p) => `<button type="button" data-act="sp" data-v="${p}" aria-pressed="${SEND.purpose === p}">${PURP[p]}</button>`).join('')}</div></div>` : ''}
     <label class="field"><span>Дата следующего визита пациента *</span><input class="inp" type="date" id="s-due" value="${esc(SEND.due)}" min="${mskDate()}"></label>
     <div class="lbl">Что отправляем <span class="mut">${total ? '· ' + total + ' шт' : ''}</span></div>
-    ${order.map((g) => `<div class="gh">${esc(g)}</div>${cat.filter((c) => c.grp === g).map((c) => `<div class="itm"><span class="cic">${catIcon(c)}</span><div class="grow">${esc(c.name)}${c.returnable ? '' : '<small>не возвращается</small>'}</div>${stp(c.id, SEND.qty[c.id])}</div>`).join('')}`).join('')}
+    ${order.map((g) => `<div class="gh">${logo(brandKey(g)) ? `<img class="blogo lg" src="${esc(logo(brandKey(g)))}" alt="${esc(g)}">` : esc(g)}</div>${cat.filter((c) => c.grp === g).map((c) => `<div class="itm"><span class="cic">${catIcon(c)}</span><div class="grow">${esc(c.name)}${c.returnable ? '' : '<small>не возвращается</small>'}</div>${stp(c.id, SEND.qty[c.id])}</div>`).join('')}`).join('')}
     <div class="gh">Другое</div>
     ${SEND.extra.map((e, i) => `<div class="itm"><div class="grow">${esc(e.name)}</div>${stp('x' + i, e.qty)}</div>`).join('')}
     <div class="rowx" style="display:flex;gap:8px;margin:6px 0 12px"><input class="inp" id="s-xn" placeholder="Название предмета" style="flex:1"><button class="btn sm alt" data-act="sx">Добавить</button></div>
@@ -1024,7 +1033,7 @@ function csv() {
 async function renderSettings() {
   if (role() !== 'super') return go('');
   const tab = route()[1] || S.stab; S.stab = tab;
-  const T = [['users', 'Сотрудники'], ['labs', 'Лаборатории'], ['catalog', 'Предметы'], ['storage', 'Хранилище']];
+  const T = [['users', 'Сотрудники'], ['labs', 'Лаборатории'], ['catalog', 'Предметы'], ['brands', 'Логотипы'], ['storage', 'Хранилище']];
   const head = `<div class="narrow"><h2>Настройки</h2><div class="tabs">${T.map(([k, t]) => `<button class="tab" data-go="settings/${k}" aria-selected="${tab === k}">${t}</button>`).join('')}</div>`;
   pane(head + '<div class="loading">Загрузка…</div></div>');
   if (tab === 'users') {
@@ -1044,6 +1053,24 @@ async function renderSettings() {
     pane(head + `<div class="card"><h3><span class="grow">Каталог предметов для отправки</span><button class="btn sm" data-act="c-new">+ Добавить</button></h3>
       ${groups.map((g) => `<div class="gh">${esc(g)}</div>${cat.filter((c) => c.grp === g).map((c) => `<div class="urow"><div class="grow">${esc(c.name)} ${c.returnable ? '' : '<span class="tag">не возвращается</span>'}${c.active ? '' : ' <span class="tag bad">скрыт</span>'}</div><button class="btn sm alt" data-act="c-edit" data-id="${c.id}">Изменить</button></div>`).join('')}`).join('')}
       </div></div>`);
+  } else if (tab === 'brands') {
+    pane(head + `<div class="card"><h3>Логотипы производителей</h3>
+      <div class="small mut" style="margin-bottom:8px">Загрузите официальные логотипы (SVG или PNG, лучше на прозрачном фоне). Они появятся рядом с имплантатами и сканами во всех работах.</div>
+      ${BRANDS.map(([k, t]) => `<div class="urow"><div class="grow"><b>${t}</b><div style="margin-top:6px">${logo(k) ? `<img src="${esc(logo(k))}" alt="${t}" style="max-height:36px;max-width:180px">` : '<span class="mut small">не загружен</span>'}</div></div>
+        <button class="btn sm alt" data-act="b-up" data-k="${k}">${logo(k) ? 'Заменить' : 'Загрузить'}</button>${logo(k) ? `<button class="btn sm ghost" data-act="b-del" data-k="${k}">Убрать</button>` : ''}</div>`).join('')}
+      </div><input type="file" id="b-file" accept="image/svg+xml,image/png,image/jpeg,image/webp" class="hide"></div>`);
+    $('#b-file').addEventListener('change', async (e) => {
+      const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+      let url;
+      if (f.type === 'image/svg+xml') { if (f.size > 200000) return toast('SVG слишком большой (макс. 200 КБ)', true); url = await new Promise((r) => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(f); }); }
+      else {
+        const bmp = await createImageBitmap(f).catch(() => null); if (!bmp) return toast('Не удалось открыть изображение', true);
+        const sc = Math.min(1, 160 / bmp.height, 600 / bmp.width); const c = document.createElement('canvas'); c.width = Math.round(bmp.width * sc); c.height = Math.round(bmp.height * sc);
+        c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height); url = c.toDataURL('image/png');
+      }
+      const r = await guard(() => call('lab_brand_set', { p_key: 'logo:' + S.brandKey, p_value: url }));
+      if (r !== undefined) { toast('Логотип сохранён'); await loadAll(); renderSettings(); }
+    });
   } else if (tab === 'storage') {
     const st = await guard(() => call('lab_storage')); if (!st) return; S.storage = st;
     const p = st.used / st.limit; const cls = p >= 0.9 ? 'b' : p >= 0.8 ? 'w' : '';
@@ -1311,6 +1338,8 @@ document.addEventListener('click', async (e) => {
         <div class="acts"><button class="btn" data-act="c-save" data-id="${d.id || ''}">Сохранить</button>${d.id ? `<button class="btn bad" data-act="c-del" data-id="${d.id}">Удалить</button>` : ''}</div>`); break;
     }
     case 'c-save': { const p = { id: d.id ? +d.id : null, grp: $('#c-g').value, name: $('#c-n').value, returnable: $('#c-r').checked, active: $('#c-a') ? $('#c-a').checked : true }; const r = await guard(() => call('lab_cat_save', { p })); if (r) { closeSheet(); await loadAll(); renderSettings(); } break; }
+    case 'b-up': S.brandKey = d.k; $('#b-file').click(); break;
+    case 'b-del': { const r = await guard(() => call('lab_brand_set', { p_key: 'logo:' + d.k, p_value: null })); if (r !== undefined) { await loadAll(); renderSettings(); } break; }
     case 'c-del': { const r = await guard(() => call('lab_cat_delete', { p_id: +d.id })); if (r) { closeSheet(); toast(r === 'deleted' ? 'Предмет удалён' : 'Предмет уже отправлялся — он скрыт из списка, история сохранена'); await loadAll(); renderSettings(); } break; }
     case 'clean': {
       const st = S.storage; const target = st.limit * 0.6; let need = st.used - target; const pick = [];

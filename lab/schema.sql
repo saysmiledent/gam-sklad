@@ -744,3 +744,7 @@ end $$;
 -- v3: система имплантата для каждой позиции (NC/RC/Medentika в одной конструкции)
 alter table lab_orders add column if not exists implant_map jsonb not null default '{}'::jsonb;
 -- lab_save_order обновлена: сохраняет p->'implant_map' (объект "зуб": "система" | "pontic")
+
+-- v5: логотипы производителей (загружает суперадмин, хранятся как data URL)
+create table if not exists lab_settings (key text primary key, value text, updated_at timestamptz not null default now());
+-- lab_brand_set(token, 'logo:straumann'|'logo:medentika'|'logo:3shape', data_url|null); lab_boot возвращает brands
