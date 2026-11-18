@@ -314,7 +314,7 @@ async function loadData(silent) {
       try { S.ov = await rpc('order_overview', { p_token: tok() }); } catch (e) { if (String(e.message) === 'AUTH') await doLogout(true); }
       try { S.recents = role() === 'staff' ? await rpc('my_recent', { p_token: tok() }) : []; } catch (e) { S.recents = []; }
     } else { S.ov = null; S.recents = []; }
-    if (!S.cat || (S.cat !== '__all' && S.cat !== '__low' && !catById(+S.cat))) S.cat = S.cats[0] ? S.cats[0].id : '__all';
+    if (!S.cat || (S.cat !== '__all' && S.cat !== '__low' && !catById(+S.cat))) S.cat = '__all';
   } catch (e) {
     S.online = false;
     if (!silent) toast(errText(e), { bad: true });
@@ -384,8 +384,8 @@ function stockHTML() {
   const lowN = active.filter(isLow).length;
   const cnt = (id) => active.filter((i) => i.category_id === id).length;
   h += `<div class="tabs" role="tablist">` +
-    S.cats.map((c) => `<button class="tab" role="tab" data-act="cat" data-id="${c.id}" aria-selected="${String(S.cat) === String(c.id)}">${esc(c.name)}<small>${cnt(c.id)}</small></button>`).join('') +
     `<button class="tab" role="tab" data-act="cat" data-id="__all" aria-selected="${S.cat === '__all'}">Все<small>${active.length}</small></button>` +
+    S.cats.map((c) => `<button class="tab" role="tab" data-act="cat" data-id="${c.id}" aria-selected="${String(S.cat) === String(c.id)}">${esc(c.name)}<small>${cnt(c.id)}</small></button>`).join('') +
     `<button class="tab alert" role="tab" data-act="cat" data-id="__low" aria-selected="${S.cat === '__low'}">Мало<small>${lowN}</small></button></div>`;
   h += `<input class="search" id="q" type="search" placeholder="Поиск по названию" value="${esc(S.q)}" autocomplete="off">`;
   h += `<div class="list" id="list">${listHTML()}</div>`;
