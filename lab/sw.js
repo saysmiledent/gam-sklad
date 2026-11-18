@@ -1,5 +1,5 @@
 // Оболочка приложения кэшируется, данные всегда берутся из сети.
-const CACHE = 'gam-lab-v6';
+const CACHE = 'gam-lab-v7';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'logos/straumann.png', 'logos/medentika.png', 'logos/3shape.png'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

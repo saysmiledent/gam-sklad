@@ -75,7 +75,7 @@ h2{font-size:21px;margin:4px 0 10px}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
 @media(min-width:1000px){
   .tabs.mob{display:none}
-  .cols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:start}
+  .cols{display:grid;grid-template-columns:repeat(var(--n,4),minmax(0,1fr));gap:12px;align-items:start}
   .col{display:block;background:#efede8;border-radius:16px;padding:10px;min-height:120px}
   .col.attn{grid-column:1/-1;background:#fbeeea}
   .col.attn .cards{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
@@ -331,8 +331,8 @@ function implSummary(map) { return Object.entries(implGroups(map)).map(([k, v]) 
 const METHODS = ['Оттиск', 'Скан'];
 const MATERIALS = ['PMMA', 'Диоксид циркония', 'E.max', 'Металлокерамика', 'Композит', 'Другое'];
 const SHADES = ['A1', 'A2', 'A3', 'A3.5', 'A4', 'B1', 'B2', 'B3', 'B4', 'C1', 'C2', 'C3', 'C4', 'D2', 'D3', 'D4', 'BL1', 'BL2', 'BL3', 'BL4'];
-const STATUS = { new: 'Ожидает отправки', at_lab: 'В лаборатории', lab_ready: 'Готово, едет в клинику', at_clinic: 'В клинике', delivered: 'Сдано пациенту', cancelled: 'Отменено' };
-const STCLS = { new: '', at_lab: 'blue', lab_ready: 'blue', at_clinic: 'ok', delivered: 'dark', cancelled: '' };
+const STATUS = { new: 'Ожидает отправки', ready_pickup: 'Готово к забору', at_lab: 'В лаборатории', lab_ready: 'Готово, едет в клинику', at_clinic: 'В клинике', delivered: 'Сдано пациенту', cancelled: 'Отменено' };
+const STCLS = { new: '', ready_pickup: 'yel', at_lab: 'blue', lab_ready: 'blue', at_clinic: 'ok', delivered: 'dark', cancelled: '' };
 const PURP = { make: 'Изготовление', next: 'Следующий этап', fix: 'Доработка', try1: 'Первичная примерка', try2: 'Финальная примерка', final: 'Сдача пациенту' };
 const ROLES = { super: 'Суперадмин', admin: 'Администратор', doctor: 'Врач', assistant: 'Ассистент', lab: 'Лаборатория' };
 const UP = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
@@ -514,7 +514,7 @@ function flags(o) {
   const today = mskDate();
   const out = { overdue: false, risk: false, short: false, delayed: !!o.delayed };
   const due = o.due || o.due_date;
-  if (due && ['new', 'at_lab', 'lab_ready'].includes(o.status)) {
+  if (due && ['new', 'ready_pickup', 'at_lab', 'lab_ready'].includes(o.status)) {
     if (today > due) out.overdue = true; else if (today >= warnDate(due)) out.risk = true;
   }
   out.short = (o.away > 0) && ['at_clinic', 'delivered', 'cancelled'].includes(o.status);
@@ -532,6 +532,7 @@ function dueTag(o) {
 const COLS = [
   { k: 'attn', t: 'Требуют внимания', f: (o) => flags(o).attn && o.status !== 'cancelled' },
   { k: 'new', t: 'Ожидают отправки', f: (o) => o.status === 'new' },
+  { k: 'pickup', t: 'Ждут курьера', f: (o) => o.status === 'ready_pickup' },
   { k: 'lab', t: 'В лаборатории', f: (o) => o.status === 'at_lab' || o.status === 'lab_ready' },
   { k: 'clinic', t: 'В клинике', f: (o) => o.status === 'at_clinic' },
   { k: 'done', t: 'Сданы', f: (o) => o.status === 'delivered' || o.status === 'cancelled' },
@@ -540,7 +541,7 @@ function card(o) {
   const f = flags(o);
   const tags = [];
   tags.push(`<span class="tag ${STCLS[o.status] || ''}">${STATUS[o.status]}</span>`);
-  if (o.purpose && ['at_lab', 'lab_ready', 'at_clinic'].includes(o.status)) tags.push(`<span class="tag">${PURP[o.purpose] || ''}</span>`);
+  if (o.purpose && ['ready_pickup', 'at_lab', 'lab_ready', 'at_clinic'].includes(o.status)) tags.push(`<span class="tag">${PURP[o.purpose] || ''}</span>`);
   if (f.delayed) tags.push('<span class="tag yel">Задерживается</span>');
   if (f.short) tags.push(`<span class="tag warn">Не вернулось: ${o.away}</span>`);
   if (o.remakes) tags.push(`<span class="tag">Доработок: ${o.remakes}</span>`);
@@ -559,7 +560,7 @@ function filtered() {
 }
 function renderBoard() {
   const list = filtered();
-  const groups = COLS.map((c) => ({ ...c, items: list.filter(c.f) }));
+  const groups = COLS.filter((c) => isClinic() || c.k !== 'new').map((c) => ({ ...c, items: list.filter(c.f) }));
   if (!groups.find((g) => g.k === S.tab)) S.tab = 'attn';
   if (S.tab === 'attn' && !groups[0].items.length && S.loaded) S.tab = groups.find((g) => g.items.length && g.k !== 'attn')?.k || 'new';
   let banner = '';
@@ -570,7 +571,7 @@ function renderBoard() {
     <div class="toolbar"><input class="search" id="q" type="search" placeholder="Поиск: фамилия или номер работы" value="${esc(S.q)}" autocomplete="off">
       ${showMine ? `<button class="tgl" data-act="mine" aria-pressed="${!!S.mine}">Мои пациенты</button>` : ''}</div>
     <div class="tabs mob" role="tablist">${groups.map((g) => `<button class="tab ${g.k === 'attn' && g.items.length ? 'alert' : ''}" role="tab" data-tab="${g.k}" aria-selected="${S.tab === g.k}">${g.k === 'attn' ? 'Внимание' : g.t}<small>${g.items.length}</small></button>`).join('')}</div>
-    <div class="cols">${groups.map((g) => `<section class="col c-${g.k} ${g.k === 'attn' ? 'attn' : ''} ${S.tab === g.k ? 'on' : ''} ${g.items.length ? '' : 'empty-col'}">
+    <div class="cols" style="--n:${groups.length - 1}">${groups.map((g) => `<section class="col c-${g.k} ${g.k === 'attn' ? 'attn' : ''} ${S.tab === g.k ? 'on' : ''} ${g.items.length ? '' : 'empty-col'}">
       <h4><span>${g.t}</span><span>${g.items.length}</span></h4>
       ${g.items.length ? `<div class="cards">${g.items.map(card).join('')}</div>` : `<div class="empty">${S.loaded ? (S.q ? 'Ничего не найдено' : 'Пусто') : 'Загрузка…'}</div>`}
       ${g.k === 'done' ? '<div class="empty small">Показаны работы за последние 45 дней. Старые — через поиск.</div>' : ''}</section>`).join('')}</div>`);
@@ -624,13 +625,15 @@ function actionsFor(o, away) {
   const a = [];
   const closed = ['delivered', 'cancelled'].includes(o.status);
   if (isClinic()) {
-    if (o.status === 'new') a.push(['send', 'Отправить в лабораторию', '']);
+    if (o.status === 'new') { a.push(['prepare', 'Готово к забору лабораторией', '']); a.push(['send', 'Отправить сразу (скан / без курьера)', 'alt']); }
+    if (o.status === 'ready_pickup') a.push(['pickup', 'Курьер забрал — работа в лаборатории', 'okb']);
     if (o.status === 'at_lab' || o.status === 'lab_ready') a.push(['receive', 'Работа получена в клинике', 'okb']);
-    if (o.status === 'at_clinic') { a.push(['deliver', 'Сдано пациенту', 'okb']); a.push(['send', 'Отправить в лабораторию', 'alt']); }
+    if (o.status === 'at_clinic') { a.push(['deliver', 'Сдано пациенту', 'okb']); a.push(['prepare', 'Готово к забору лабораторией', 'alt']); a.push(['send', 'Отправить сразу (скан)', 'sm ghost']); }
     if (!closed) a.push(['edit', 'Изменить', 'sm ghost']);
     a.push(['more', '+ Ещё работа пациенту', 'sm ghost']);
     if (!closed && ['super', 'admin', 'doctor'].includes(role())) a.push(['cancel', 'Отменить работу', 'sm ghost']);
   } else {
+    if (o.status === 'ready_pickup') a.push(['pickup', 'Забрали — работа у нас', 'okb']);
     if (o.status === 'at_lab') { a.push(['ready', 'Готово — отправить в клинику', 'okb']); a.push([o.delayed ? 'undelay' : 'delay', o.delayed ? 'Снять задержку' : 'Задерживается', o.delayed ? 'ghost' : 'yelb']); }
   }
   return a;
@@ -684,7 +687,7 @@ function renderOrder() {
     </div>
     <div class="card"><h3><span class="hic">${svg(MIC.box, 26)}</span><span class="grow">Предметы</span>${isClinic() && away > 0 ? '<button class="btn sm alt" data-act="o-back">Принять</button>' : ''}</h3>
       ${d.items.length ? `<div class="tw"><table><tr><th>Предмет</th><th>Отпр.</th><th>Вернулось</th><th>В лаб.</th></tr>
-        ${d.items.map((i) => { const left = i.returnable ? i.sent - i.back - i.woff : 0; return `<tr><td><span class="mi">${catIcon(i, 22)}</span> ${esc(i.name)}${i.returnable ? '' : ' <span class="mut small">(не возвращается)</span>'}${i.woff ? ` <span class="tag warn">списано ${i.woff}</span>` : ''}</td><td>${i.sent || 0}</td><td>${i.returnable ? i.back : '—'}</td><td class="${left > 0 && !['at_lab'].includes(o.status) ? 'neg' : ''}">${i.returnable ? left : '—'}</td></tr>`; }).join('')}</table></div>`
+        ${d.items.map((i) => { const left = i.returnable ? i.sent - i.back - i.woff : 0; return `<tr><td><span class="mi">${catIcon(i, 22)}</span> ${esc(i.name)}${i.returnable ? '' : ' <span class="mut small">(не возвращается)</span>'}${i.woff ? ` <span class="tag warn">списано ${i.woff}</span>` : ''}</td><td>${i.sent || 0}</td><td>${i.returnable ? i.back : '—'}</td><td class="${left > 0 && !['at_lab','ready_pickup'].includes(o.status) ? 'neg' : ''}">${i.returnable ? left : '—'}</td></tr>`; }).join('')}</table></div>`
         : '<div class="mut small">Предметы ещё не отправлялись.</div>'}
     </div>
     <div class="card"><h3>Файлы <span class="mut small">${live.length}</span></h3>
@@ -755,7 +758,7 @@ function renderForm() {
     </div>
     <label class="field"><span>Комментарий для лаборатории</span><textarea class="inp" id="f-notes" rows="3">${esc(F.notes)}</textarea></label>
   </div>
-  <div class="acts" style="margin-bottom:20px">${F.id ? '<button class="btn" data-act="form-save">Сохранить</button>' : '<button class="btn" data-act="form-save-send">Сохранить и отправить в лабораторию</button><button class="btn alt" data-act="form-save">Только сохранить</button>'}</div>
+  <div class="acts" style="margin-bottom:20px">${F.id ? '<button class="btn" data-act="form-save">Сохранить</button>' : '<button class="btn" data-act="form-save-send">Сохранить — готово к забору</button><button class="btn alt" data-act="form-save">Только сохранить</button>'}</div>
   </div>`);
   const fio = $('#f-fio');
   fio.addEventListener('input', () => {
@@ -818,10 +821,10 @@ function sheet(html, cls = '') {
 function closeSheet() { const o = $('#ov'); if (o) o.remove(); document.body.style.overflow = ''; }
 
 let SEND = null;
-function openSend() {
+function openSend(mode) {
   const o = S.order.order;
   const today = mskDate();
-  SEND = { purpose: o.status === 'new' ? 'make' : 'next', due: o.due_date && o.due_date >= today ? o.due_date : '', qty: {}, extra: [] };
+  SEND = { mode: mode || 'send', purpose: o.status === 'new' ? 'make' : 'next', due: o.due_date && o.due_date >= today ? o.due_date : '', qty: {}, extra: [] };
   renderSend();
 }
 function renderSend() {
@@ -833,7 +836,8 @@ function renderSend() {
   const stp = (k, v) => `<div class="stp ${v ? 'on' : ''}"><button type="button" data-act="sq" data-k="${k}" data-d="-1" aria-label="Меньше">−</button><span>${v || 0}</span><button type="button" data-act="sq" data-k="${k}" data-d="1" aria-label="Больше">+</button></div>`;
   const purposes = o.status === 'new' ? ['make'] : ['next', 'fix'];
   const total = Object.values(SEND.qty).reduce((a, b) => a + b, 0) + SEND.extra.reduce((a, e) => a + e.qty, 0);
-  sheet(`<h3>Отправить в лабораторию · ${num(o.id)}</h3>
+  sheet(`<h3>${SEND.mode === 'prepare' ? 'Готово к забору' : 'Отправить в лабораторию'} · ${num(o.id)}</h3>
+    ${SEND.mode === 'prepare' ? '<div class="small mut" style="margin-bottom:8px">Лаборатория увидит работу в списке «Ждут курьера» и пришлёт курьера.</div>' : ''}
     ${purposes.length > 1 ? `<div class="field"><span class="lbl">Цель</span><div class="chips">${purposes.map((p) => `<button type="button" data-act="sp" data-v="${p}" aria-pressed="${SEND.purpose === p}">${PURP[p]}</button>`).join('')}</div></div>` : ''}
     <label class="field"><span>Дата следующего визита пациента *</span><input class="inp" type="date" id="s-due" value="${esc(SEND.due)}" min="${mskDate()}"></label>
     <div class="lbl">Что отправляем <span class="mut">${total ? '· ' + total + ' шт' : ''}</span></div>
@@ -843,7 +847,7 @@ function renderSend() {
     <div class="rowx" style="display:flex;gap:8px;margin:6px 0 12px"><input class="inp" id="s-xn" placeholder="Название предмета" style="flex:1"><button class="btn sm alt" data-act="sx">Добавить</button></div>
     <label class="field"><span>${SEND.purpose === 'fix' ? 'Что нужно исправить *' : 'Комментарий'}</span><textarea class="inp" id="s-note" rows="3">${esc(SEND.note || '')}</textarea></label>
     <div class="small mut">Фото для лаборатории можно добавить в переписке после отправки.</div>
-    <div class="acts"><button class="btn" data-act="send-go">Отправить</button></div>`);
+    <div class="acts"><button class="btn" data-act="send-go">${SEND.mode === 'prepare' ? 'Готово к забору' : 'Отправить'}</button></div>`);
   const sv = () => { SEND.due = $('#s-due').value; SEND.note = $('#s-note').value; };
   $('#s-due').addEventListener('input', sv); $('#s-note').addEventListener('input', sv);
 }
@@ -853,9 +857,9 @@ async function doSend() {
   if (SEND.purpose === 'fix' && !SEND.note.trim()) { toast('Опишите, что нужно исправить', true); return; }
   const items = Object.entries(SEND.qty).filter(([, q]) => q > 0).map(([id, q]) => ({ catalog_id: +id, qty: q })).concat(SEND.extra.filter((e) => e.qty > 0).map((e) => ({ name: e.name, qty: e.qty })));
   const id = S.order.order.id;
-  const r = await guard(() => call('lab_send', { p_id: id, p_purpose: SEND.purpose, p_due: SEND.due, p_items: items, p_note: SEND.note || null }));
+  const r = await guard(() => call(SEND.mode === 'prepare' ? 'lab_prepare' : 'lab_send', { p_id: id, p_purpose: SEND.purpose, p_due: SEND.due, p_items: items, p_note: SEND.note || null }));
   if (r === undefined) return;
-  closeSheet(); toast('Отмечено: отправлено в лабораторию'); await refreshOrder(id);
+  closeSheet(); toast(SEND.mode === 'prepare' ? 'Лаборатория увидит: готово к забору' : 'Отмечено: отправлено в лабораторию'); await refreshOrder(id);
 }
 function openReceive() {
   const o = S.order.order;
@@ -864,6 +868,12 @@ function openReceive() {
     <div class="field"><span class="lbl">Для чего пришла работа</span><div class="chips" id="r-p">${['try1', 'try2', 'final'].map((p) => `<button type="button" data-v="${p}" aria-pressed="${p === def}">${PURP[p]}</button>`).join('')}</div></div>
     ${o.status === 'at_lab' ? '<div class="small mut">Лаборатория ещё не отметила отправку — это нормально, можно принять сразу.</div>' : ''}
     <div class="acts"><button class="btn okb" data-act="recv-go">Работа в клинике</button></div>`);
+}
+async function doPickup() {
+  const id = S.order.order.id;
+  const r = await guard(() => call('lab_pickup', { p_id: id }));
+  if (r === undefined) return;
+  toast('Отмечено: работа в лаборатории'); await refreshOrder(id);
 }
 async function doReceive() {
   const p = $('#r-p [aria-pressed=true]')?.dataset.v || 'try1';
@@ -1177,7 +1187,7 @@ async function render() {
     if (!S.order || S.oid !== id) { S.order = null; S.pend = []; pane('<div class="loading">Загрузка…</div>'); await loadOrder(id); }
     if (route()[0] !== 'o' || +route()[1] !== id) return;
     renderOrder();
-    if (S.afterOpen === 'send' && S.order && S.order.order.status === 'new') { S.afterOpen = null; openSend(); }
+    if (S.afterOpen === 'send' && S.order && S.order.order.status === 'new') { S.afterOpen = null; openSend('prepare'); }
   } else if (r === 'new') {
     if (!isClinic()) return go('');
     if (!F || F.id) { F = blankForm(); if (S.prefill) { Object.assign(F, S.prefill); S.prefill = null; } }
@@ -1276,6 +1286,8 @@ document.addEventListener('click', async (e) => {
     case 'f-newpat': F.patient_id = null; readForm(); renderForm(); break;
     // работа
     case 'o-send': openSend(); break;
+    case 'o-prepare': openSend('prepare'); break;
+    case 'o-pickup': doPickup(); break;
     case 'o-receive': openReceive(); break;
     case 'o-back': openBack(); break;
     case 'o-ready': openReady(); break;
