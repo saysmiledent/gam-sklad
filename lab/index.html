@@ -243,6 +243,52 @@ tr.click:hover td{background:#f4f8fd}
 .lb{position:fixed;inset:0;background:rgba(10,14,20,.92);z-index:80;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;padding:14px}
 .lb img{max-width:100%;max-height:82vh;border-radius:8px}
 .lb .rowx{display:flex;gap:8px}
+
+/* ---- живой вид ---- */
+body{background:linear-gradient(180deg,#e4eefb 0,#f1f4f8 380px,#f6f5f1 900px) fixed}
+.top{border-bottom:0;box-shadow:0 1px 0 #dfe6ef}
+.top::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:3px;background:linear-gradient(90deg,#3b66a6,#88ace0 45%,#7fd0b0 75%,#e8b86d)}
+.card{box-shadow:0 1px 2px rgba(30,50,80,.04),0 6px 18px rgba(30,50,80,.05);border-color:#e6e9ee}
+.oc{display:grid;grid-template-columns:50px 1fr;gap:0 10px;align-items:start;box-shadow:0 1px 2px rgba(30,50,80,.05);transition:transform .12s,box-shadow .12s}
+.oc:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(30,60,110,.12)}
+.oc .ic{grid-row:1/5;width:50px;height:50px;border-radius:14px;background:linear-gradient(145deg,#eef4fc,#dde9f8);display:flex;align-items:center;justify-content:center}
+.oc .ic svg{width:42px;height:42px}
+.oc .l1,.oc .fio,.oc .wk,.oc .meta{grid-column:2}
+.oc .dr{font-weight:500;color:var(--mut);font-size:13.5px}
+.mi{display:inline-flex;align-items:center;gap:4px;vertical-align:middle}
+.mi svg{width:18px;height:18px}
+.ichip{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 9px 1px 4px;background:color-mix(in srgb,var(--c) 12%,#fff);color:var(--c);border:1px solid color-mix(in srgb,var(--c) 30%,#fff);white-space:nowrap}
+.ichip svg{width:18px;height:18px}
+.sw{display:inline-block;width:14px;height:14px;border-radius:4px;border:1px solid #c9b994;vertical-align:-2px;margin-right:5px}
+@media(min-width:1000px){
+  .col{border-top:4px solid #b9c0c9;background:#eef0f3}
+  .col.c-new{border-top-color:#8a95a3;background:#edf0f4}
+  .col.c-lab{border-top-color:#7b5cc4;background:#f0ecfa}
+  .col.c-clinic{border-top-color:#2b9466;background:#e7f4ed}
+  .col.c-done{border-top-color:#3b66a6;background:#e9eff8}
+  .col.attn{border-top-color:#d0392b;background:#fbece8}
+  .col>h4 span:first-child{display:flex;align-items:center;gap:7px}
+  .col>h4 span:first-child::before{content:"";width:9px;height:9px;border-radius:50%;background:currentColor;opacity:.55}
+}
+.hero{display:flex;gap:16px;align-items:center;background:linear-gradient(120deg,#3b66a6,#5a86c4 55%,#88ace0);color:#fff;border-radius:18px;padding:16px 18px;margin:0 0 12px;box-shadow:0 10px 26px rgba(40,80,140,.22);position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-40px;top:-40px;width:170px;height:170px;border-radius:50%;background:rgba(255,255,255,.08)}
+.hero .big{flex:none;width:92px;height:92px;border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.hero .big svg{width:80px;height:80px}
+.hero h2{color:#fff;margin:0 0 2px;font-size:22px}
+.hero .sub{opacity:.92;font-weight:600}
+.hero .hchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.hero .hc{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.95);color:var(--ink);border-radius:999px;padding:3px 10px 3px 5px;font-size:13px;font-weight:700}
+.hero .hc svg{width:20px;height:20px}
+.hero .num{position:absolute;right:14px;top:12px;background:rgba(255,255,255,.18);border-radius:999px;padding:2px 10px;font-size:13px;font-weight:700;z-index:1}
+@media(max-width:560px){.hero{padding:14px}.hero .big{width:70px;height:70px;border-radius:18px}.hero .big svg{width:60px;height:60px}.hero h2{font-size:19px}}
+.wchips{display:grid;grid-template-columns:repeat(auto-fill,minmax(102px,1fr));gap:8px}
+.wchips button{border:1.5px solid #dde2e9;background:#fff;border-radius:14px;padding:8px 6px 7px;font-weight:600;color:var(--slate);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:86px}
+.wchips button svg{width:46px;height:46px}
+.wchips button[aria-pressed=true]{border-color:var(--deep);background:#eaf1fb;color:var(--deep);box-shadow:0 0 0 2px #cfe0f7}
+.chips button .mi svg{width:20px;height:20px}
+.itm .cic{flex:none;width:34px;height:34px;border-radius:10px;background:#f1f4f8;display:flex;align-items:center;justify-content:center}
+.itm .cic svg{width:30px;height:30px}
+.card h3 .hic svg{width:26px;height:26px;vertical-align:middle}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -269,6 +315,7 @@ const STORAGE_LIMIT = 1073741824;
 const WORK = ['Коронка', 'Коронка на имплантате', 'Мостовидный протез', 'Мост на имплантатах', 'All-on-4', 'All-on-6', 'Балочная конструкция', 'Винир', 'Вкладка / накладка', 'Индивидуальный абатмент', 'Съёмный протез', 'Каппа / сплинт', 'Другое'];
 const SYSTEMS = ['Straumann NC', 'Straumann RC', 'Medentika Universal', 'Другая'];
 const SYS_SHORT = { 'Straumann NC': 'NC', 'Straumann RC': 'RC', 'Medentika Universal': 'Medentika', 'Другая': 'Другая', pontic: 'Без имплантата' };
+function implChips(o) { const g = implGroups(legacyMap(o)); const k = Object.keys(g); return k.length ? k.map((s) => `<span class="ichip" style="--c:${SYSC[s] || '#61707f'}">${svg(MIC.implant, 18)}${esc(s.replace('Universal', ''))} ×${g[s].length}</span>`).join('') : (o.implant_system ? `<span class="ichip" style="--c:#61707f">${svg(MIC.implant, 18)}${esc(o.implant_system)}</span>` : ''); }
 function implGroups(map) { const g = {}; Object.entries(map || {}).sort((a, b) => a[0] - b[0]).forEach(([t, v]) => { if (v && v !== 'pontic') (g[v] = g[v] || []).push(t); }); return g; }
 function implSummary(map) { return Object.entries(implGroups(map)).map(([k, v]) => `${k}: ${v.join(', ')}`).join('; '); }
 const METHODS = ['Оттиск', 'Скан'];
@@ -307,6 +354,73 @@ const ICON = {
   cam: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 8h4l2-3h6l2 3h4v11H3z"/><circle cx="12" cy="13" r="3.5"/></svg>',
   send: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 12l16-8-6 16-2-6-8-2z"/></svg>',
 };
+
+/* ============================ схемы (иконки работ) ============================ */
+const C = { crown: 'fill="#fff" stroke="#3b66a6" stroke-width="1.4" stroke-linejoin="round"', root: 'fill="#f3e2bf" stroke="#c9a66b" stroke-width="1.2" stroke-linejoin="round"',
+  imp: 'fill="#c3ccd6" stroke="#5f6c7a" stroke-width="1.2" stroke-linejoin="round"', gum: '#f2b3bd' };
+const P_CROWN = 'M2 6C2 2 5.5.5 8 1.8c1.2.6 2.8.6 4 0C14.5.5 18 2 18 6c0 4-1.2 6.5-2 9H4C3.2 12.5 2 10 2 6z';
+const P_SHINE = '<path d="M5.5 4.5c1-1.2 2.4-1.4 3.4-.9" fill="none" stroke="#bcd3f0" stroke-width="1.3" stroke-linecap="round"/>';
+const P_ROOT = 'M4.3 15c.4 5.5 1.8 11.5 3.7 11.5 1.4 0 1.6-5 2-7.5.4 2.5.6 7.5 2 7.5 1.9 0 3.3-6 3.7-11.5z';
+const P_IMP = '<path d="M7.6 15h4.8v3H7.6z" ' + C.imp + '/><path d="M6.4 18h7.2l-.5 11.5L10 32.5l-3.1-3z" ' + C.imp + '/><path d="M6.5 21.2h7M6.7 24.4h6.6M6.9 27.5h6.2" stroke="#5f6c7a" stroke-width="1"/>';
+const crownG = (x, y, s, base) => `<g transform="translate(${x} ${y}) scale(${s})">${base === 'root' ? `<path d="${P_ROOT}" ${C.root}/>` : base === 'imp' ? P_IMP : ''}<path d="${P_CROWN}" ${C.crown}/>${P_SHINE}</g>`;
+const archG = (n, teeth = true) => {
+  const pts = n === 6 ? [[9.5, 20], [13, 30], [19, 36], [29, 36], [35, 30], [38.5, 20]] : [[10.5, 23], [18, 34.5], [30, 34.5], [37.5, 23]];
+  return `<path d="M8 10c0 17 7 27 16 27s16-10 16-27" fill="none" stroke="${C.gum}" stroke-width="10" stroke-linecap="round"/>
+    ${teeth ? '<path d="M8 10c0 17 7 27 16 27s16-10 16-27" fill="none" stroke="#fff" stroke-width="5.5" stroke-dasharray="3.4 1.3" stroke-linecap="butt"/>' : ''}
+    ${pts.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.6" fill="#8d9aa8" stroke="#4f5b68" stroke-width=".9"/>`).join('')}`;
+};
+const WIC = {
+  crown: crownG(11, 3, 1.3, 'root'),
+  crownImp: crownG(11.5, 2, 1.32, 'imp'),
+  bridge: `<rect x="9" y="12" width="30" height="5" rx="2" fill="#dbe7f7"/>${crownG(1, 7, .78, 'root')}${crownG(16.2, 7, .78, '')}${crownG(31.4, 7, .78, 'root')}`,
+  bridgeImp: `<rect x="9" y="12" width="30" height="5" rx="2" fill="#dbe7f7"/>${crownG(1, 6, .8, 'imp')}${crownG(16, 6, .8, '')}${crownG(31, 6, .8, 'imp')}`,
+  allon4: archG(4), allon6: archG(6),
+  bar: `${crownG(3, 8, .85, 'imp')}${crownG(28, 8, .85, 'imp')}<rect x="10" y="18" width="28" height="4.5" rx="2" fill="#aeb9c5" stroke="#5f6c7a" stroke-width="1.1"/>`,
+  veneer: `<path d="M16 6c0-2.5 3-4 8-4s8 1.5 8 4l-1.6 19H17.6z" ${C.crown}/><path d="M17.6 25c.6 9 3 17 6.4 17s5.8-8 6.4-17z" ${C.root}/><path d="M18.5 5.5c1.5-1.5 9.5-1.5 11 0l-1.3 17.5h-8.4z" fill="#cfe0f7" stroke="#88ace0" stroke-width="1"/>`,
+  inlay: `${crownG(11, 3, 1.3, 'root')}<path d="M18.5 7.5l3.5-2.3 4 0 3.5 2.3-1.2 5h-8.6z" fill="#88ace0" stroke="#3b66a6" stroke-width="1.1" stroke-linejoin="round"/>`,
+  abut: `<g transform="translate(12 1) scale(1.25)"><path d="M6.5 4h7l1 11h-9z" fill="#dfe5ec" stroke="#5f6c7a" stroke-width="1.2" stroke-linejoin="round"/>${P_IMP}</g>`,
+  denture: `<path d="M4 30c0-9 8-14 20-14s20 5 20 14v6c-4-2-8-3-20-3S8 34 4 36z" fill="${C.gum}" stroke="#d9808f" stroke-width="1.2"/>${[6, 13.5, 21, 28.5, 36].map((x) => `<g transform="translate(${x} 15) scale(.38 .55)"><path d="${P_CROWN}" ${C.crown}/></g>`).join('')}`,
+  splint: `<path d="M8 10c0 17 7 27 16 27s16-10 16-27" fill="none" stroke="#a9ddea" stroke-width="10" stroke-linecap="round" opacity=".75"/><path d="M8 10c0 17 7 27 16 27s16-10 16-27" fill="none" stroke="#5fb3c9" stroke-width="1.3"/>`,
+  other: `${crownG(11, 3, 1.3, 'root')}<circle cx="36" cy="11" r="7" fill="#3b66a6"/><path d="M36 7.5v7M32.5 11h7" stroke="#fff" stroke-width="2" stroke-linecap="round"/>`,
+};
+const MIC = {
+  scan: `<g transform="rotate(38 24 24)"><rect x="19" y="3" width="10" height="36" rx="5" fill="#2f3a48"/><rect x="20.5" y="1" width="7" height="10" rx="2.2" fill="#88ace0"/><rect x="21.5" y="16" width="5" height="2" rx="1" fill="#6ee0c0"/></g><path d="M30 34l6-3 6 3v6l-6 3-6-3z" fill="#e7f1fc" stroke="#3b66a6" stroke-width="1.2" stroke-linejoin="round"/><path d="M30 34l6 3 6-3M36 37v6" fill="none" stroke="#3b66a6" stroke-width="1.2"/>`,
+  tray: `<path d="M9 8c0 18 6 27 15 27s15-9 15-27" fill="none" stroke="#9aa7b5" stroke-width="8" stroke-linecap="round"/><path d="M9 8c0 18 6 27 15 27s15-9 15-27" fill="none" stroke="#7fd0b0" stroke-width="3.6" stroke-linecap="round"/><rect x="20.5" y="34" width="7" height="12" rx="2" fill="#9aa7b5" stroke="#6d7a88" stroke-width="1"/>`,
+  implant: `<g transform="translate(14 2) scale(1.3)">${P_IMP}<path d="M7.6 11h4.8v4H7.6z" fill="#dfe5ec" stroke="#5f6c7a" stroke-width="1.2"/></g>`,
+  box: `<rect x="8" y="14" width="32" height="24" rx="4" fill="#efe6d6" stroke="#b49a6c" stroke-width="1.4"/><path d="M8 20h32" stroke="#b49a6c" stroke-width="1.4"/><rect x="20" y="17" width="8" height="5" rx="1.5" fill="#fff" stroke="#b49a6c"/>`,
+  model: `<path d="M8 30c0-8 7-13 16-13s16 5 16 13v6H8z" fill="#f4f0e8" stroke="#b9ad97" stroke-width="1.3"/>${[11, 18, 25, 32].map((x) => `<g transform="translate(${x} 11) scale(.3 .45)"><path d="${P_CROWN}" ${C.crown}/></g>`).join('')}`,
+  bite: `<path d="M8 22c0-6 7-10 16-10s16 4 16 10-7 10-16 10S8 28 8 22z" fill="#cfe9f3" stroke="#5fa9c4" stroke-width="1.3"/><path d="M12 22h24" stroke="#5fa9c4" stroke-width="1.2" stroke-dasharray="2 2"/>`,
+};
+const svg = (inner, s = 44) => `<svg viewBox="0 0 48 48" width="${s}" height="${s}" aria-hidden="true">${inner}</svg>`;
+function workKey(w, imp) {
+  w = (w || '').toLowerCase();
+  if (w.includes('all-on-6')) return 'allon6';
+  if (w.includes('all-on')) return 'allon4';
+  if (w.includes('балоч')) return 'bar';
+  if (w.includes('мост')) return (imp || w.includes('имплант')) ? 'bridgeImp' : 'bridge';
+  if (w.includes('коронк')) return (imp || w.includes('имплант')) ? 'crownImp' : 'crown';
+  if (w.includes('винир')) return 'veneer';
+  if (w.includes('вкладк')) return 'inlay';
+  if (w.includes('абатмент')) return 'abut';
+  if (w.includes('съёмн') || w.includes('съемн')) return 'denture';
+  if (w.includes('капп') || w.includes('сплинт')) return 'splint';
+  return 'other';
+}
+const workIcon = (w, imp, s) => svg(WIC[workKey(w, imp)], s);
+const methodIcon = (m, s = 22) => (m === 'Скан' ? svg(MIC.scan, s) : m === 'Оттиск' ? svg(MIC.tray, s) : '');
+const SYSC = { 'Straumann NC': '#138a7e', 'Straumann RC': '#6f4fc0', 'Medentika Universal': '#c46a12', 'Другая': '#61707f' };
+function catIcon(c, s = 30) {
+  const n = (c.name || '').toLowerCase(), g = (c.grp || '').toLowerCase();
+  if (n.includes('ложка')) return svg(MIC.tray, s);
+  if (n.includes('модел')) return svg(MIC.model, s);
+  if (n.includes('прикус')) return svg(MIC.bite, s);
+  if (n.includes('коронк')) return svg(WIC.crown, s);
+  if (n.includes('скан')) return svg(MIC.scan, s);
+  if (g.includes('straumann') || g.includes('medentika') || /трансфер|аналог|винт|абатмент|формировател/.test(n)) return svg(MIC.implant, s);
+  return svg(MIC.box, s);
+}
+const VITA = { A1: '#f2e6cc', A2: '#ead9b5', A3: '#e2ca9f', 'A3.5': '#dbbf8f', A4: '#cfaa78', B1: '#f3e9d4', B2: '#ebdab3', B3: '#e0c696', B4: '#d8b981', C1: '#e3d8c1', C2: '#d8cbab', C3: '#ccbc98', C4: '#bea980', D2: '#e4d6bc', D3: '#d9c7a4', D4: '#d1bd96', BL1: '#fbf8f1', BL2: '#f8f3e8', BL3: '#f4eee0', BL4: '#f0e8d6' };
+const swatch = (sh) => (VITA[sh] ? `<i class="sw" style="background:${VITA[sh]}"></i>` : '');
 
 /* ============================ состояние ============================ */
 const S = {
@@ -422,10 +536,11 @@ function card(o) {
   if (o.remakes) tags.push(`<span class="tag">Доработок: ${o.remakes}</span>`);
   if (o.unread && !['delivered', 'cancelled'].includes(o.status)) tags.push(`<span class="tag dark">💬 ${o.unread}</span>`);
   const cls = f.overdue || f.risk ? 'r' : f.short ? 'o' : f.delayed ? 'y' : '';
-  return `<button class="oc ${cls}" data-go="o/${o.id}">
-    <div class="l1"><span>${num(o.id)}${o.doctor ? ' · ' + esc(o.doctor) : ''}</span>${dueTag(o)}</div>
-    <div class="fio">${esc(o.fio)}</div>
-    <div class="wk">${esc(o.work_type)}${o.teeth && o.teeth.length ? ' · ' + teethTxt(o.teeth) : ''}${o.implant_system ? ' · ' + esc(o.implant_system) : ''}</div>
+  return `<button class="oc ${cls}" data-go="o/${o.id}"><span class="ic">${workIcon(o.work_type, o.implant)}</span>
+    <div class="l1"><span>${num(o.id)}</span>${dueTag(o)}</div>
+    <div class="fio">${esc(o.fio)}${o.doctor ? `<span class="dr"> · ${esc(o.doctor)}</span>` : ''}</div>
+    <div class="wk">${esc(o.work_type)}${o.teeth && o.teeth.length ? ' · ' + teethTxt(o.teeth) : ''}${o.shade ? ' · ' + swatch(o.shade) + esc(o.shade) : ''}</div>
+    ${o.implant ? `<div class="meta">${implChips(o)}</div>` : ''}
     <div class="meta">${tags.join('')}</div></button>`;
 }
 function filtered() {
@@ -445,7 +560,7 @@ function renderBoard() {
     <div class="toolbar"><input class="search" id="q" type="search" placeholder="Поиск: фамилия или номер работы" value="${esc(S.q)}" autocomplete="off">
       ${showMine ? `<button class="tgl" data-act="mine" aria-pressed="${!!S.mine}">Мои пациенты</button>` : ''}</div>
     <div class="tabs mob" role="tablist">${groups.map((g) => `<button class="tab ${g.k === 'attn' && g.items.length ? 'alert' : ''}" role="tab" data-tab="${g.k}" aria-selected="${S.tab === g.k}">${g.k === 'attn' ? 'Внимание' : g.t}<small>${g.items.length}</small></button>`).join('')}</div>
-    <div class="cols">${groups.map((g) => `<section class="col ${g.k === 'attn' ? 'attn' : ''} ${S.tab === g.k ? 'on' : ''} ${g.items.length ? '' : 'empty-col'}">
+    <div class="cols">${groups.map((g) => `<section class="col c-${g.k} ${g.k === 'attn' ? 'attn' : ''} ${S.tab === g.k ? 'on' : ''} ${g.items.length ? '' : 'empty-col'}">
       <h4><span>${g.t}</span><span>${g.items.length}</span></h4>
       ${g.items.length ? `<div class="cards">${g.items.map(card).join('')}</div>` : `<div class="empty">${S.loaded ? (S.q ? 'Ничего не найдено' : 'Пусто') : 'Загрузка…'}</div>`}
       ${g.k === 'done' ? '<div class="empty small">Показаны работы за последние 45 дней. Старые — через поиск.</div>' : ''}</section>`).join('')}</div>`);
@@ -522,9 +637,9 @@ function renderOrder() {
     ['Вид работы', esc(o.work_type)],
     ...(o.implant ? [['Имплантаты', (() => { const g = implGroups(legacyMap(o)); const k = Object.keys(g); return k.length ? k.map((s) => `${esc(s)} — ${g[s].join(', ')} <span class="mut">(${g[s].length} шт)</span>`).join('<br>') : esc(o.implant_system || '—'); })()]] : []),
     ...(o.implant && Object.values(o.implant_map || {}).includes('pontic') ? [['Без имплантата', Object.entries(o.implant_map).filter(([, v]) => v === 'pontic').map(([t]) => t).sort((a, b) => a - b).join(', ')]] : []),
-    ['Метод', esc(o.method || '—')],
+    ['Метод', o.method ? `<span class="mi">${methodIcon(o.method, 20)}${esc(o.method === 'Скан' ? 'Скан (3Shape)' : o.method)}</span>` : '—'],
     ['Тип', o.temp ? 'Временная' : 'Постоянная'], ['Материал', esc(o.material || '—')],
-    ['Цвет', esc([o.shade, o.shade_note].filter(Boolean).join(' · ') || '—')],
+    ['Цвет', (o.shade ? swatch(o.shade) : '') + esc([o.shade, o.shade_note].filter(Boolean).join(' · ') || '—')],
     ['Визит пациента', o.due_date ? dmy(o.due_date) + ' (' + dmy(o.due_date, true).split('(')[1] : '—'],
     ['Оформил(а)', esc(o.author || '—') + ' · ' + dmy(o.created_at.slice(0, 10))],
   ];
@@ -533,7 +648,12 @@ function renderOrder() {
   const items = outstanding(d);
   const draft = S.draft[o.id] || '';
   pane(`<button class="back" data-go="">← Все работы</button>
-  <div class="ohead"><h2>${esc(o.fio)}</h2><span class="tag ${STCLS[o.status]}">${num(o.id)}</span></div>
+  <div class="hero"><span class="num">${num(o.id)}</span><div class="big">${workIcon(o.work_type, o.implant)}</div>
+    <div style="min-width:0;position:relative;z-index:1"><h2>${esc(o.fio)}</h2><div class="sub">${esc(o.work_type)}${o.teeth.length ? ' · зубы ' + teethTxt(o.teeth) : ''}</div>
+    <div class="hchips">${o.method ? `<span class="hc">${methodIcon(o.method)}${esc(o.method === 'Скан' ? 'Скан · 3Shape' : o.method)}</span>` : ''}
+      ${o.implant ? Object.entries(implGroups(legacyMap(o))).map(([k, v]) => `<span class="hc" style="color:${SYSC[k] || '#61707f'}">${svg(MIC.implant, 20)}${esc(k)} × ${v.length}</span>`).join('') : ''}
+      ${o.material ? `<span class="hc">${o.temp ? '⏳ Временная' : '◆ Постоянная'} · ${esc(o.material)}</span>` : ''}
+      ${o.shade ? `<span class="hc">${swatch(o.shade)}${esc(o.shade)}</span>` : ''}</div></div></div>
   ${sib}
   <div class="grid2"><div>
     <div class="card">
@@ -547,14 +667,14 @@ function renderOrder() {
       ${acts.filter((x) => !x[2].includes('sm')).length ? `<div class="acts">${acts.filter((x) => !x[2].includes('sm')).map(([k, t, c]) => `<button class="btn ${c}" data-act="o-${k}">${t}</button>`).join('')}</div>` : ''}
       ${acts.filter((x) => x[2].includes('sm')).length ? `<div class="acts small-acts">${acts.filter((x) => x[2].includes('sm')).map(([k, t, c]) => `<button class="btn ${c}" data-act="o-${k}">${t}</button>`).join('')}</div>` : ''}
     </div>
-    <div class="card"><h3>Параметры работы</h3>
+    <div class="card"><h3><span class="hic">${svg(WIC.crown, 26)}</span>Параметры работы</h3>
       <dl class="kv">${kv.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
       ${o.teeth.length ? `<div class="lbl" style="margin-top:12px">Зубы: ${teethTxt(o.teeth)}</div>${teethChart(o.teeth, true)}` : ''}
       ${o.notes ? `<div class="lbl" style="margin-top:12px">Комментарий</div><div style="white-space:pre-wrap">${esc(o.notes)}</div>` : ''}
     </div>
-    <div class="card"><h3><span class="grow">Предметы</span>${isClinic() && away > 0 ? '<button class="btn sm alt" data-act="o-back">Принять</button>' : ''}</h3>
+    <div class="card"><h3><span class="hic">${svg(MIC.box, 26)}</span><span class="grow">Предметы</span>${isClinic() && away > 0 ? '<button class="btn sm alt" data-act="o-back">Принять</button>' : ''}</h3>
       ${d.items.length ? `<div class="tw"><table><tr><th>Предмет</th><th>Отпр.</th><th>Вернулось</th><th>В лаб.</th></tr>
-        ${d.items.map((i) => { const left = i.returnable ? i.sent - i.back - i.woff : 0; return `<tr><td>${esc(i.name)}${i.returnable ? '' : ' <span class="mut small">(не возвращается)</span>'}${i.woff ? ` <span class="tag warn">списано ${i.woff}</span>` : ''}</td><td>${i.sent || 0}</td><td>${i.returnable ? i.back : '—'}</td><td class="${left > 0 && !['at_lab'].includes(o.status) ? 'neg' : ''}">${i.returnable ? left : '—'}</td></tr>`; }).join('')}</table></div>`
+        ${d.items.map((i) => { const left = i.returnable ? i.sent - i.back - i.woff : 0; return `<tr><td><span class="mi">${catIcon(i, 22)}</span> ${esc(i.name)}${i.returnable ? '' : ' <span class="mut small">(не возвращается)</span>'}${i.woff ? ` <span class="tag warn">списано ${i.woff}</span>` : ''}</td><td>${i.sent || 0}</td><td>${i.returnable ? i.back : '—'}</td><td class="${left > 0 && !['at_lab'].includes(o.status) ? 'neg' : ''}">${i.returnable ? left : '—'}</td></tr>`; }).join('')}</table></div>`
         : '<div class="mut small">Предметы ещё не отправлялись.</div>'}
     </div>
     <div class="card"><h3>Файлы <span class="mut small">${live.length}</span></h3>
@@ -610,11 +730,11 @@ function renderForm() {
     ${labs.length > 1 ? `<label class="field"><span>Дата следующего визита</span><input class="inp" type="date" id="f-due" value="${esc(F.due_date)}"></label>` : ''}
   </div>
   <div class="card">
-    <div class="field"><span class="lbl">Вид работы *</span>${chips(WORK, 'work_type')}</div>
+    <div class="field"><span class="lbl">Вид работы *</span><div class="wchips" data-chips="work_type">${WORK.map((v) => `<button type="button" data-v="${esc(v)}" aria-pressed="${F.work_type === v}">${workIcon(v, false, 46)}${esc(v)}</button>`).join('')}</div></div>
     <div class="field"><span class="lbl">Зубы <span class="mut" id="f-tt">${teethTxt(F.teeth)}</span></span>${teethChart(F.teeth)}</div>
     <label class="chk"><input type="checkbox" id="f-impl" ${F.implant ? 'checked' : ''}> На имплантатах</label>
     <div class="field ${F.implant ? '' : 'hide'}" id="f-implbox" style="margin-top:8px">${implBox()}</div>
-    <div class="field"><span class="lbl">Метод</span>${chips(METHODS, 'method')}</div>
+    <div class="field"><span class="lbl">Метод</span><div class="chips" data-chips="method">${METHODS.map((v) => `<button type="button" data-v="${esc(v)}" aria-pressed="${F.method === v}"><span class="mi">${methodIcon(v, 20)}${v === 'Скан' ? 'Скан (3Shape)' : v}</span></button>`).join('')}</div></div>
   </div>
   <div class="card">
     <div class="field"><span class="lbl">Тип</span><div class="chips" data-chips="temp"><button type="button" data-v="0" aria-pressed="${!F.temp}">Постоянная</button><button type="button" data-v="1" aria-pressed="${F.temp}">Временная</button></div></div>
@@ -707,7 +827,7 @@ function renderSend() {
     ${purposes.length > 1 ? `<div class="field"><span class="lbl">Цель</span><div class="chips">${purposes.map((p) => `<button type="button" data-act="sp" data-v="${p}" aria-pressed="${SEND.purpose === p}">${PURP[p]}</button>`).join('')}</div></div>` : ''}
     <label class="field"><span>Дата следующего визита пациента *</span><input class="inp" type="date" id="s-due" value="${esc(SEND.due)}" min="${mskDate()}"></label>
     <div class="lbl">Что отправляем <span class="mut">${total ? '· ' + total + ' шт' : ''}</span></div>
-    ${order.map((g) => `<div class="gh">${esc(g)}</div>${cat.filter((c) => c.grp === g).map((c) => `<div class="itm"><div class="grow">${esc(c.name)}${c.returnable ? '' : '<small>не возвращается</small>'}</div>${stp(c.id, SEND.qty[c.id])}</div>`).join('')}`).join('')}
+    ${order.map((g) => `<div class="gh">${esc(g)}</div>${cat.filter((c) => c.grp === g).map((c) => `<div class="itm"><span class="cic">${catIcon(c)}</span><div class="grow">${esc(c.name)}${c.returnable ? '' : '<small>не возвращается</small>'}</div>${stp(c.id, SEND.qty[c.id])}</div>`).join('')}`).join('')}
     <div class="gh">Другое</div>
     ${SEND.extra.map((e, i) => `<div class="itm"><div class="grow">${esc(e.name)}</div>${stp('x' + i, e.qty)}</div>`).join('')}
     <div class="rowx" style="display:flex;gap:8px;margin:6px 0 12px"><input class="inp" id="s-xn" placeholder="Название предмета" style="flex:1"><button class="btn sm alt" data-act="sx">Добавить</button></div>
@@ -754,7 +874,7 @@ function renderBack() {
   const rest = it.reduce((s, i) => s + (i.left - (BACK.q[i.name] || 0)), 0);
   sheet(`<h3>Принять предметы · ${num(S.order.order.id)}</h3>
     <div class="small mut" style="margin-bottom:6px">Проверьте, что вернулось из лаборатории. Отметьте количество по каждому предмету.</div>
-    ${it.map((i, n) => `<div class="itm"><div class="grow">${esc(i.name)}<small>в лаборатории: ${i.left}</small></div>
+    ${it.map((i, n) => `<div class="itm"><span class="cic">${catIcon(i)}</span><div class="grow">${esc(i.name)}<small>в лаборатории: ${i.left}</small></div>
       <div class="stp ${BACK.q[i.name] ? 'on' : ''}"><button type="button" data-act="bq" data-n="${n}" data-d="-1">−</button><span>${BACK.q[i.name] || 0}</span><button type="button" data-act="bq" data-n="${n}" data-d="1">+</button></div></div>`).join('')}
     ${rest > 0 ? `<div class="banner warn" style="margin-top:12px"><span>Не вернулось: ${rest} шт. Они останутся в списке «Предметы в лаборатории».</span></div>
       <label class="chk"><input type="checkbox" id="b-w" ${BACK.woff ? 'checked' : ''}> Списать недостающее (утеряно / осталось в лаборатории навсегда)</label>
@@ -858,7 +978,7 @@ async function renderAway() {
   const shortRows = rows.filter((r) => ['at_clinic', 'delivered', 'cancelled'].includes(r.status));
   pane(`<div class="narrow"><h2>Предметы клиники в лаборатории</h2>
     <div class="stats"><div><b>${total}</b><span>всего предметов в лаборатории</span></div><div><b style="color:${shortRows.length ? 'var(--bad)' : 'var(--deep)'}">${shortRows.reduce((s, r) => s + r.qty, 0)}</b><span>не вернулись, хотя работа уже в клинике</span></div></div>
-    ${names.length ? names.map((n) => `<div class="card"><h3><span class="grow">${esc(n)}</span><span class="tag blue">${by[n].reduce((s, r) => s + r.qty, 0)} шт</span></h3>
+    ${names.length ? names.map((n) => `<div class="card"><h3><span class="hic">${catIcon({ name: n }, 26)}</span><span class="grow">${esc(n)}</span><span class="tag blue">${by[n].reduce((s, r) => s + r.qty, 0)} шт</span></h3>
       <div class="tw"><table>${by[n].map((r) => { const sh = ['at_clinic', 'delivered', 'cancelled'].includes(r.status); return `<tr class="click" data-go="o/${r.order_id}"><td>${num(r.order_id)} · ${esc(r.fio)}</td><td><span class="tag ${sh ? 'warn' : STCLS[r.status]}">${sh ? 'Не вернулось' : STATUS[r.status]}</span></td><td class="${sh ? 'neg' : ''}">${r.qty} шт</td></tr>`; }).join('')}</table></div></div>`).join('')
       : '<div class="card empty">Все предметы на месте ✓</div>'}</div>`);
 }
@@ -1051,6 +1171,7 @@ async function render() {
 function legacyMap(o) {
   const m = Object.assign({}, o.implant_map || {});
   if (o.implant && !Object.keys(m).length && SYSTEMS.includes(o.implant_system)) o.teeth.forEach((t) => { m[t] = o.implant_system; });
+  else if (o.implant && !Object.keys(m).length && /:/.test(o.implant_system || '')) o.implant_system.split(';').forEach((part) => { const [sys, ts] = part.split(':'); (ts || '').split(',').map((x) => x.trim()).filter(Boolean).forEach((t) => { m[t] = sys.trim(); }); });
   return m;
 }
 async function loadAll() {
