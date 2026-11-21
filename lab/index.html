@@ -837,7 +837,7 @@ function renderSend() {
   const purposes = o.status === 'new' ? ['make'] : ['next', 'fix'];
   const total = Object.values(SEND.qty).reduce((a, b) => a + b, 0) + SEND.extra.reduce((a, e) => a + e.qty, 0);
   sheet(`<h3>${SEND.mode === 'prepare' ? 'Готово к забору' : 'Отправить в лабораторию'} · ${num(o.id)}</h3>
-    ${SEND.mode === 'prepare' ? '<div class="small mut" style="margin-bottom:8px">Лаборатория увидит работу в списке «Ждут курьера» и пришлёт курьера.</div>' : ''}
+    ${SEND.mode === 'prepare' ? `<div class="small mut" style="margin-bottom:8px">${total ? 'Лаборатория увидит работу в списке «Ждут курьера» и пришлёт курьера.' : 'Предметов нет — работа сразу уйдёт в лабораторию как «Отправлено» (только скан / файлы).'}</div>` : ''}
     ${purposes.length > 1 ? `<div class="field"><span class="lbl">Цель</span><div class="chips">${purposes.map((p) => `<button type="button" data-act="sp" data-v="${p}" aria-pressed="${SEND.purpose === p}">${PURP[p]}</button>`).join('')}</div></div>` : ''}
     <label class="field"><span>Дата следующего визита пациента *</span><input class="inp" type="date" id="s-due" value="${esc(SEND.due)}" min="${mskDate()}"></label>
     <div class="lbl">Что отправляем <span class="mut">${total ? '· ' + total + ' шт' : ''}</span></div>
@@ -847,7 +847,7 @@ function renderSend() {
     <div class="rowx" style="display:flex;gap:8px;margin:6px 0 12px"><input class="inp" id="s-xn" placeholder="Название предмета" style="flex:1"><button class="btn sm alt" data-act="sx">Добавить</button></div>
     <label class="field"><span>${SEND.purpose === 'fix' ? 'Что нужно исправить *' : 'Комментарий'}</span><textarea class="inp" id="s-note" rows="3">${esc(SEND.note || '')}</textarea></label>
     <div class="small mut">Фото для лаборатории можно добавить в переписке после отправки.</div>
-    <div class="acts"><button class="btn" data-act="send-go">${SEND.mode === 'prepare' ? 'Готово к забору' : 'Отправить'}</button></div>`);
+    <div class="acts"><button class="btn" data-act="send-go">${SEND.mode === 'prepare' ? (total ? 'Готово к забору' : 'Отправить в лабораторию') : 'Отправить'}</button></div>`);
   const sv = () => { SEND.due = $('#s-due').value; SEND.note = $('#s-note').value; };
   $('#s-due').addEventListener('input', sv); $('#s-note').addEventListener('input', sv);
 }
@@ -859,7 +859,7 @@ async function doSend() {
   const id = S.order.order.id;
   const r = await guard(() => call(SEND.mode === 'prepare' ? 'lab_prepare' : 'lab_send', { p_id: id, p_purpose: SEND.purpose, p_due: SEND.due, p_items: items, p_note: SEND.note || null }));
   if (r === undefined) return;
-  closeSheet(); toast(SEND.mode === 'prepare' ? 'Лаборатория увидит: готово к забору' : 'Отмечено: отправлено в лабораторию'); await refreshOrder(id);
+  closeSheet(); toast(SEND.mode === 'prepare' && items.length ? 'Лаборатория увидит: готово к забору' : 'Отмечено: отправлено в лабораторию'); await refreshOrder(id);
 }
 function openReceive() {
   const o = S.order.order;
